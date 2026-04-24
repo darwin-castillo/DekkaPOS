@@ -1,16 +1,12 @@
-class Provider {
+class Category {
   final int? id;
   final String name;
   final String? description;
-  final String? phone;
-  final String? address;
 
-  Provider({
+  Category({
     this.id,
     required this.name,
     this.description,
-    this.phone,
-    this.address,
   });
 
   Map<String, dynamic> toMap() {
@@ -18,18 +14,14 @@ class Provider {
       'id': id,
       'name': name,
       'description': description,
-      'phone': phone,
-      'address': address,
     };
   }
 
-  factory Provider.fromMap(Map<String, dynamic> map) {
-    return Provider(
+  factory Category.fromMap(Map<String, dynamic> map) {
+    return Category(
       id: map['id'] as int?,
       name: map['name'] as String,
       description: map['description'] as String?,
-      phone: map['phone'] as String?,
-      address: map['address'] as String?,
     );
   }
 }

@@ -1,26 +1,31 @@
 import 'package:flutter/foundation.dart';
+import '../../data/daos/product_dao.dart';
 import '../../domain/entities/product.dart';
-import '../../domain/repositories/product_repository.dart';
 
 class ProductProvider extends ChangeNotifier {
-  final ProductRepository _repository;
+  final ProductDao _productDao = ProductDao();
+  
   List<Product> _products = [];
   List<Product> _filteredProducts = [];
   String _searchQuery = '';
-
-  ProductProvider(this._repository) {
-    loadProducts();
-  }
+  bool _isLoading = false;
 
   List<Product> get products => List.unmodifiable(_products);
   List<Product> get filteredProducts => List.unmodifiable(_filteredProducts);
+  bool get isLoading => _isLoading;
 
-  void loadProducts() {
-    _products = _repository.getAllProducts();
+  Future<void> loadProducts() async {
+    _isLoading = true;
+    notifyListeners();
+    
+    _products = await _productDao.getAll();
     _applyFilter();
+    
+    _isLoading = false;
+    notifyListeners();
   }
 
-  void search(String query) {
+  Future<void> search(String query) async {
     _searchQuery = query;
     _applyFilter();
   }
@@ -29,17 +34,42 @@ class ProductProvider extends ChangeNotifier {
     if (_searchQuery.isEmpty) {
       _filteredProducts = List.from(_products);
     } else {
-      _filteredProducts = _repository.searchProducts(_searchQuery);
+      _filteredProducts = _products.where((p) {
+        final nameLower = p.name.toLowerCase();
+        final codeLower = p.code.toLowerCase();
+        final queryLower = _searchQuery.toLowerCase();
+        return nameLower.contains(queryLower) || codeLower.contains(queryLower);
+      }).toList();
     }
     notifyListeners();
   }
 
-  Product? getProductByCode(String code) {
-    return _repository.getProductByCode(code);
+  Future<Product?> getById(int id) async {
+    return await _productDao.getById(id);
   }
 
-  void updateStock(String code, int newStock) {
-    _repository.updateStock(code, newStock);
-    loadProducts();
+  Future<Product?> getByCode(String code) async {
+    return await _productDao.getByCode(code);
+  }
+
+  Future<int> create(Product product) async {
+    final id = await _productDao.create(product);
+    await loadProducts();
+    return id;
+  }
+
+  Future<void> update(Product product) async {
+    await _productDao.update(product);
+    await loadProducts();
+  }
+
+  Future<void> delete(int id) async {
+    await _productDao.delete(id);
+    await loadProducts();
+  }
+
+  Future<void> updateStock(int id, int newStock) async {
+    await _productDao.updateStock(id, newStock);
+    await loadProducts();
   }
 }

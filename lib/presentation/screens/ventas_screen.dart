@@ -1,3 +1,4 @@
+import 'package:dekkapos/presentation/widgets/dekka_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/product_provider.dart';
@@ -10,24 +11,31 @@ class VentasScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Punto de Venta'),
-      ),
+      appBar: DekkaAppBar(title: 'Punto de Venta'),
       body: Row(
         children: [
           Expanded(
             flex: 2,
             child: Container(
-              color: Colors.grey.shade100,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.inventory_2, color: Theme.of(context).colorScheme.primary),
+                      Icon(
+                        Icons.inventory_2,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                       const SizedBox(width: 8),
-                      const Text('Productos', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Productos',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -47,10 +55,7 @@ class VentasScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-          const Expanded(
-            flex: 1,
-            child: CartPanel(),
-          ),
+          const Expanded(flex: 1, child: CartPanel()),
         ],
       ),
     );

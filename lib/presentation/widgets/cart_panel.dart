@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../domain/entities/product.dart';
 import '../providers/cart_provider.dart';
 import 'client_card.dart';
+import '../../core/theme.dart';
 
 class CartPanel extends StatelessWidget {
   const CartPanel({super.key});
@@ -20,52 +22,56 @@ class CartPanel extends StatelessWidget {
                 const ClientCard(),
                 const SizedBox(height: 12),
                 Consumer<CartProvider>(
-                  builder: (context, cart, _) => Card(
-                    elevation: 4,
-                    color: Colors.green.shade700,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Column(
-                            children: [
-                              const Text('TOTAL FACTURA', style: TextStyle(fontSize: 16, color: Colors.white70)),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Bs ${cart.totalBs.toStringAsFixed(2)}',
-                                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-                              ),
-                              Text(
-                                '\$${cart.totalUsd.toStringAsFixed(2)} USD',
-                                style: const TextStyle(fontSize: 18, color: Colors.white70),
-                              ),
-                            ],
-                          ),
-                        ],
+                  builder: (context, cart, _) {
+                    final colorScheme = Theme.of(context).colorScheme;
+                    return Card(
+                      elevation: 4,
+                      color: colorScheme.primary,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Column(
+                              children: [
+                                Text('TOTAL FACTURA', style: TextStyle(fontSize: 16, color: colorScheme.onPrimary.withValues(alpha: 0.7))),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Bs ${cart.totalBs.toStringAsFixed(2)}',
+                                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: colorScheme.onPrimary),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ],
             ),
           ),
           Padding(
             padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                const Text('Detalle de Venta', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const Spacer(),
-                ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.person_add, size: 18),
-                  label: const Text('Cliente'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ],
+            child: Builder(
+              builder: (context) {
+                final colorScheme = Theme.of(context).colorScheme;
+                return Row(
+                  children: [
+                    const Text('Detalle de Venta', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Spacer(),
+                    ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.person_add, size: 18),
+                      label: const Text('Cliente'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorScheme.secondary,
+                        foregroundColor: colorScheme.onSecondary,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
           const Expanded(child: CartItemsList()),
@@ -81,6 +87,7 @@ class CartItemsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Consumer<CartProvider>(
       builder: (context, cart, _) {
         if (cart.items.isEmpty) {
@@ -106,17 +113,17 @@ class CartItemsList extends StatelessWidget {
             ],
             rows: List.generate(cart.items.length, (index) {
               final item = cart.items[index];
-              final esPeso = item.saleType == 'peso';
+              final esPeso = item.unit == SaleUnit.kilogramo;
               return DataRow(cells: [
                 DataCell(Text(item.code, style: const TextStyle(fontSize: 11))),
                 DataCell(Text(item.name, style: const TextStyle(fontSize: 11), overflow: TextOverflow.ellipsis)),
                 DataCell(Text(
-                  esPeso ? item.cantidad.toStringAsFixed(3) : item.cantidad.toInt().toString(),
-                  style: TextStyle(fontWeight: FontWeight.bold, color: esPeso ? Colors.orange : Colors.black),
+                  esPeso ? item.cantidad.toStringAsFixed(3) : item.cantidad.toStringAsFixed(0),
+                  style: TextStyle(fontWeight: FontWeight.bold, color: esPeso ? colorScheme.tertiary : null),
                 )),
-                DataCell(Text('Bs ${item.totalBs.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11))),
+                DataCell(Text('Bs ${item.total.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11))),
                 DataCell(IconButton(
-                  icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                  icon: Icon(Icons.delete, size: 18, color: colorScheme.error),
                   onPressed: () => cart.removeItem(index),
                 )),
               ]);
@@ -133,33 +140,121 @@ class CartActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(12),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
           Expanded(
-            child: OutlinedButton.icon(
+            child: _ActionButton(
+              icon: Icons.close,
+              label: 'CANCELAR',
               onPressed: () => context.read<CartProvider>().clear(),
-              icon: const Icon(Icons.cancel),
-              label: const Text('CANCELAR'),
-              style: OutlinedButton.styleFrom(foregroundColor: Colors.red, side: const BorderSide(color: Colors.red)),
+              isPrimary: false,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             flex: 2,
-            child: ElevatedButton.icon(
+            child: _ActionButton(
+              icon: Icons.check_circle_outline,
+              label: 'COBRAR',
               onPressed: () {},
-              icon: const Icon(Icons.shopping_cart_checkout),
-              label: const Text('COBRAR'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
+              isPrimary: true,
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+  final bool isPrimary;
+
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    required this.isPrimary,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isPrimary) {
+      return Container(
+        decoration: BoxDecoration(
+          gradient: AppTheme.primaryButtonGradient,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    icon,
+                    size: 20,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color: Colors.grey.shade600,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
