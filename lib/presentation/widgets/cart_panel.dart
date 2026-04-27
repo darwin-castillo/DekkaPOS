@@ -34,11 +34,23 @@ class CartPanel extends StatelessWidget {
                           children: [
                             Column(
                               children: [
-                                Text('TOTAL FACTURA', style: TextStyle(fontSize: 16, color: colorScheme.onPrimary.withValues(alpha: 0.7))),
+                                Text(
+                                  'TOTAL FACTURA',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: colorScheme.onPrimary.withValues(
+                                      alpha: 0.7,
+                                    ),
+                                  ),
+                                ),
                                 const SizedBox(height: 8),
                                 Text(
                                   'Bs ${cart.totalBs.toStringAsFixed(2)}',
-                                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: colorScheme.onPrimary),
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: colorScheme.onPrimary,
+                                  ),
                                 ),
                               ],
                             ),
@@ -58,7 +70,13 @@ class CartPanel extends StatelessWidget {
                 final colorScheme = Theme.of(context).colorScheme;
                 return Row(
                   children: [
-                    const Text('Detalle de Venta', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Detalle de Venta',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const Spacer(),
                     ElevatedButton.icon(
                       onPressed: () {},
@@ -92,12 +110,17 @@ class CartItemsList extends StatelessWidget {
       builder: (context, cart, _) {
         if (cart.items.isEmpty) {
           return const Center(
-            child: Text('Carrito vacío\nAñada productos', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+            child: Text(
+              'Carrito vacío\nAñada productos',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
+            ),
           );
         }
 
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 12),
+          width: double.infinity,
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey.shade300),
             borderRadius: BorderRadius.circular(8),
@@ -105,28 +128,79 @@ class CartItemsList extends StatelessWidget {
           child: DataTable(
             columnSpacing: 12,
             columns: const [
-              DataColumn(label: Text('Código', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-              DataColumn(label: Text('Producto', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-              DataColumn(label: Text('Cant.', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-              DataColumn(label: Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+              DataColumn(
+                label: Text(
+                  'Código',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Producto',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Cant.',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Total',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+              ),
               DataColumn(label: Text('')),
             ],
             rows: List.generate(cart.items.length, (index) {
               final item = cart.items[index];
               final esPeso = item.unit == SaleUnit.kilogramo;
-              return DataRow(cells: [
-                DataCell(Text(item.code, style: const TextStyle(fontSize: 11))),
-                DataCell(Text(item.name, style: const TextStyle(fontSize: 11), overflow: TextOverflow.ellipsis)),
-                DataCell(Text(
-                  esPeso ? item.cantidad.toStringAsFixed(3) : item.cantidad.toStringAsFixed(0),
-                  style: TextStyle(fontWeight: FontWeight.bold, color: esPeso ? colorScheme.tertiary : null),
-                )),
-                DataCell(Text('Bs ${item.total.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11))),
-                DataCell(IconButton(
-                  icon: Icon(Icons.delete, size: 18, color: colorScheme.error),
-                  onPressed: () => cart.removeItem(index),
-                )),
-              ]);
+              return DataRow(
+                cells: [
+                  DataCell(
+                    Text(item.code, style: const TextStyle(fontSize: 11)),
+                  ),
+                  DataCell(
+                    Text(
+                      item.name,
+                      style: const TextStyle(fontSize: 11),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  DataCell(
+                    Text(
+                      esPeso
+                          ? item.cantidad.toStringAsFixed(3)
+                          : item.cantidad.toStringAsFixed(0),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: esPeso ? colorScheme.tertiary : null,
+                      ),
+                    ),
+                  ),
+                  DataCell(
+                    Text(
+                      'Bs ${item.total.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+                  DataCell(
+                    IconButton(
+                      icon: Icon(
+                        Icons.delete,
+                        size: 18,
+                        color: colorScheme.error,
+                      ),
+                      onPressed: () => cart.removeItem(index),
+                    ),
+                  ),
+                ],
+              );
             }),
           ),
         );
@@ -199,11 +273,7 @@ class _ActionButton extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    icon,
-                    size: 20,
-                    color: Colors.white,
-                  ),
+                  Icon(icon, size: 20, color: Colors.white),
                   const SizedBox(width: 8),
                   Text(
                     label,
@@ -237,11 +307,7 @@ class _ActionButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 20,
-                color: Colors.grey.shade600,
-              ),
+              Icon(icon, size: 20, color: Colors.grey.shade600),
               const SizedBox(width: 8),
               Text(
                 label,

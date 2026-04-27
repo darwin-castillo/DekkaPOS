@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
-import 'data/database_helper.dart';
+import 'data/app_database.dart';
 import 'presentation/providers/product_provider.dart';
 import 'presentation/providers/cart_provider.dart';
 import 'presentation/providers/client_provider.dart';
@@ -11,8 +11,7 @@ import 'presentation/screens/main_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  final dbHelper = DatabaseHelper();
-  await dbHelper.database;
+  AppDatabase.instance;
   
   runApp(const DekkaPOS());
 }

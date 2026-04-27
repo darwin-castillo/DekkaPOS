@@ -68,7 +68,7 @@ class ProductProvider extends ChangeNotifier {
     await loadProducts();
   }
 
-  Future<void> updateStock(int id, int newStock) async {
+  Future<void> updateStock(int id, double newStock) async {
     await _productDao.updateStock(id, newStock);
     await loadProducts();
   }

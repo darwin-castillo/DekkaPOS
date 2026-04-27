@@ -14,6 +14,7 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: Colors.white,
+      fontFamily: 'Quicksand',
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -61,7 +62,7 @@ class AppTheme {
   static const LinearGradient sidebarGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFF1A237E), Color(0xFF3949AB)],
+    colors: [Color.fromARGB(255, 5, 10, 65), Color.fromARGB(255, 60, 0, 97)],
   );
 
   static const LinearGradient primaryButtonGradient = LinearGradient(

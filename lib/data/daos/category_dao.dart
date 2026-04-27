@@ -1,39 +1,52 @@
-import '../../domain/entities/category.dart';
-import '../database_helper.dart';
+import 'package:drift/drift.dart';
+import '../../domain/entities/category.dart' as entity;
+import '../app_database.dart';
 
 class CategoryDao {
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  final AppDatabase _db = AppDatabase.instance;
 
-  Future<int> create(Category category) async {
-    final db = await _dbHelper.database;
-    return await db.insert('categories', category.toMap()..removeWhere((key, value) => value == null));
+  Future<int> create(entity.Category category) async {
+    return await _db.into(_db.categories).insert(
+      CategoriesCompanion.insert(
+        name: category.name,
+        description: Value(category.description),
+      ),
+    );
   }
 
-  Future<List<Category>> getAll() async {
-    final db = await _dbHelper.database;
-    final result = await db.query('categories');
-    return result.map((map) => Category.fromMap(map)).toList();
+  Future<List<entity.Category>> getAll() async {
+    final results = await _db.select(_db.categories).get();
+    return results.map(_categoryFromRow).toList();
   }
 
-  Future<Category?> getById(int id) async {
-    final db = await _dbHelper.database;
-    final result = await db.query('categories', where: 'id = ?', whereArgs: [id]);
-    if (result.isEmpty) return null;
-    return Category.fromMap(result.first);
+  Future<entity.Category?> getById(int id) async {
+    final result = await (_db.select(_db.categories)
+          ..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
+    return result != null ? _categoryFromRow(result) : null;
   }
 
-  Future<int> update(Category category) async {
-    final db = await _dbHelper.database;
-    return await db.update(
-      'categories',
-      category.toMap()..removeWhere((key, value) => value == null),
-      where: 'id = ?',
-      whereArgs: [category.id],
+  Future<int> update(entity.Category category) async {
+    return await (_db.update(_db.categories)
+          ..where((t) => t.id.equals(category.id!)))
+        .write(
+      CategoriesCompanion(
+        name: Value(category.name),
+        description: Value(category.description),
+      ),
     );
   }
 
   Future<int> delete(int id) async {
-    final db = await _dbHelper.database;
-    return await db.delete('categories', where: 'id = ?', whereArgs: [id]);
+    return await (_db.delete(_db.categories)..where((t) => t.id.equals(id)))
+        .go();
+  }
+
+  entity.Category _categoryFromRow(CategoryEnt row) {
+    return entity.Category(
+      id: row.id,
+      name: row.name,
+      description: row.description,
+    );
   }
 }

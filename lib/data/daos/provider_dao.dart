@@ -1,39 +1,58 @@
-import '../../domain/entities/provider.dart';
-import '../database_helper.dart';
+import 'package:drift/drift.dart';
+import '../../domain/entities/provider.dart' as entity;
+import '../app_database.dart';
 
 class ProviderDao {
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  final AppDatabase _db = AppDatabase.instance;
 
-  Future<int> create(Provider provider) async {
-    final db = await _dbHelper.database;
-    return await db.insert('providers', provider.toMap()..removeWhere((key, value) => value == null));
+  Future<int> create(entity.Provider provider) async {
+    return await _db.into(_db.providers).insert(
+      ProvidersCompanion.insert(
+        name: provider.name,
+        description: Value(provider.description),
+        phone: Value(provider.phone),
+        address: Value(provider.address),
+      ),
+    );
   }
 
-  Future<List<Provider>> getAll() async {
-    final db = await _dbHelper.database;
-    final result = await db.query('providers');
-    return result.map((map) => Provider.fromMap(map)).toList();
+  Future<List<entity.Provider>> getAll() async {
+    final results = await _db.select(_db.providers).get();
+    return results.map(_providerFromRow).toList();
   }
 
-  Future<Provider?> getById(int id) async {
-    final db = await _dbHelper.database;
-    final result = await db.query('providers', where: 'id = ?', whereArgs: [id]);
-    if (result.isEmpty) return null;
-    return Provider.fromMap(result.first);
+  Future<entity.Provider?> getById(int id) async {
+    final result = await (_db.select(_db.providers)
+          ..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
+    return result != null ? _providerFromRow(result) : null;
   }
 
-  Future<int> update(Provider provider) async {
-    final db = await _dbHelper.database;
-    return await db.update(
-      'providers',
-      provider.toMap()..removeWhere((key, value) => value == null),
-      where: 'id = ?',
-      whereArgs: [provider.id],
+  Future<int> update(entity.Provider provider) async {
+    return await (_db.update(_db.providers)
+          ..where((t) => t.id.equals(provider.id!)))
+        .write(
+      ProvidersCompanion(
+        name: Value(provider.name),
+        description: Value(provider.description),
+        phone: Value(provider.phone),
+        address: Value(provider.address),
+      ),
     );
   }
 
   Future<int> delete(int id) async {
-    final db = await _dbHelper.database;
-    return await db.delete('providers', where: 'id = ?', whereArgs: [id]);
+    return await (_db.delete(_db.providers)..where((t) => t.id.equals(id)))
+        .go();
+  }
+
+  entity.Provider _providerFromRow(ProviderEnt row) {
+    return entity.Provider(
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      phone: row.phone,
+      address: row.address,
+    );
   }
 }
