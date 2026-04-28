@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../domain/entities/product.dart';
 import '../providers/product_provider.dart';
+import '../providers/currency_provider.dart';
+import '../providers/exchange_rate_provider.dart';
+import '../providers/settings_provider.dart';
 import '../widgets/dekka_app_bar.dart';
 
 class ProductosScreen extends StatefulWidget {
@@ -17,7 +20,18 @@ class _ProductosScreenState extends State<ProductosScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProductProvider>().loadProducts();
+      context.read<CurrencyProvider>().loadCurrencies();
+      context.read<ExchangeRateProvider>().loadExchangeRates();
+      context.read<SettingsProvider>().loadSettings();
     });
+  }
+
+  double? _getPrice(double basePrice, int fromCurrencyId, int toCurrencyId, List<dynamic> rates) {
+    final rate = rates.where((r) => 
+      r.fromId == fromCurrencyId && r.toId == toCurrencyId
+    ).firstOrNull;
+    if (rate == null) return null;
+    return basePrice * rate.value;
   }
 
   @override
@@ -80,11 +94,52 @@ class _ProductosScreenState extends State<ProductosScreen> {
                     ),
                   ),
                   title: Text(p.name),
-                  subtitle: Text('Código: ${p.code} • Stock: ${p.stock.toStringAsFixed(isKg ? 3 : 0)} ${p.unit.label}'),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Código: ${p.code} • Stock: ${p.stock.toStringAsFixed(isKg ? 3 : 0)} ${p.unit.label}'),
+                      Consumer3<CurrencyProvider, ExchangeRateProvider, SettingsProvider>(
+                        builder: (context, currencyProvider, rateProvider, settings, _) {
+                          final baseCurrency = currencyProvider.baseCurrency;
+                          if (baseCurrency == null) {
+                            return Text('Bs ${p.price.toStringAsFixed(2)}');
+                          }
+                          final rates = rateProvider.exchangeRates;
+                          final price1 = settings.additionalCurrency1Id != null 
+                              ? _getPrice(p.price, baseCurrency.id!, settings.additionalCurrency1Id!, rates)
+                              : null;
+                          final price2 = settings.additionalCurrency2Id != null 
+                              ? _getPrice(p.price, baseCurrency.id!, settings.additionalCurrency2Id!, rates)
+                              : null;
+                          
+                          final currency1 = price1 != null 
+                              ? currencyProvider.currencies.where((c) => c.id == settings.additionalCurrency1Id).firstOrNull
+                              : null;
+                          final currency2 = price2 != null 
+                              ? currencyProvider.currencies.where((c) => c.id == settings.additionalCurrency2Id).firstOrNull
+                              : null;
+                          
+                          return Row(
+                            children: [
+                              Text('${baseCurrency.symbol} ${p.price.toStringAsFixed(2)}', 
+                                style: const TextStyle(fontWeight: FontWeight.bold)),
+                              if (currency1 != null && price1 != null) ...[
+                                const SizedBox(width: 8),
+                                Text('${currency1.symbol} ${price1!.toStringAsFixed(2)}'),
+                              ],
+                              if (currency2 != null && price2 != null) ...[
+                                const SizedBox(width: 8),
+                                Text('${currency2.symbol} ${price2!.toStringAsFixed(2)}'),
+                              ],
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('Bs ${p.price.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       IconButton(
                         icon: Icon(Icons.edit, color: colorScheme.primary),
                         onPressed: () => _showProductDialog(context, product: p),

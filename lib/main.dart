@@ -6,6 +6,10 @@ import 'presentation/providers/product_provider.dart';
 import 'presentation/providers/cart_provider.dart';
 import 'presentation/providers/client_provider.dart';
 import 'presentation/providers/navigation_provider.dart';
+import 'presentation/providers/currency_provider.dart';
+import 'presentation/providers/exchange_rate_provider.dart';
+import 'presentation/providers/invoice_provider.dart';
+import 'presentation/providers/settings_provider.dart';
 import 'presentation/screens/main_screen.dart';
 
 void main() async {
@@ -27,6 +31,10 @@ class DekkaPOS extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => ClientProvider()),
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
+        ChangeNotifierProvider(create: (_) => CurrencyProvider()),
+        ChangeNotifierProvider(create: (_) => ExchangeRateProvider()),
+        ChangeNotifierProvider(create: (_) => InvoiceProvider()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],
       child: MaterialApp(
         title: 'DekkaPOS',

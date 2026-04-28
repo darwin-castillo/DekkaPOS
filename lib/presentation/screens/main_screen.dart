@@ -8,6 +8,8 @@ import 'productos_screen.dart';
 import 'clientes_screen.dart';
 import 'proveedores_screen.dart';
 import 'reportes_screen.dart';
+import 'facturas_screen.dart';
+import 'configuracion_screen.dart';
 import '../../core/theme.dart';
 
 class MainScreen extends StatelessWidget {
@@ -19,6 +21,8 @@ class MainScreen extends StatelessWidget {
     const ClientesScreen(),
     const ProveedoresScreen(),
     const ReportesScreen(),
+    const FacturasScreen(),
+    const ConfiguracionScreen(),
   ];
 
   @override
@@ -49,6 +53,8 @@ class _SideMenu extends StatelessWidget {
     _NavData(icon: Icons.people, label: 'Clientes'),
     _NavData(icon: Icons.local_shipping, label: 'Proveed.'),
     _NavData(icon: Icons.analytics, label: 'Reportes'),
+    _NavData(icon: Icons.receipt_long, label: 'Facturas'),
+    _NavData(icon: Icons.settings, label: 'Ajustes'),
   ];
 
   @override
@@ -73,14 +79,6 @@ class _SideMenu extends StatelessWidget {
                   isSelected: nav.selectedIndex == index,
                   onTap: () => nav.setIndex(index),
                 ),
-              ),
-              const Spacer(),
-              const Divider(color: Colors.white24, indent: 24, endIndent: 24),
-              NavButton(
-                icon: Icons.settings,
-                label: 'Ajustes',
-                isSelected: false,
-                onTap: () {},
               ),
               const SizedBox(height: 16),
             ],
