@@ -56,12 +56,12 @@ flutter:
   uses-material-design: true
 
   fonts:
-    - family: Quicksand
+    - family: Poppins
       fonts:
-        - asset: assets/fonts/quicksand/Quicksand-Regular.ttf
-        - asset: assets/fonts/quicksand/Quicksand-Medium.ttf
+        - asset: assets/fonts/poppins/Poppins-Regular.ttf
+        - asset: assets/fonts/poppins/Poppins-Medium.ttf
           weight: 500
-        - asset: assets/fonts/quicksand/Quicksand-SemiBold.ttf
+        - asset: assets/fonts/poppins/Poppins-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/quicksand/Quicksand-Bold.ttf
+        - asset: assets/fonts/poppins/Poppins-Bold.ttf
           weight: 700

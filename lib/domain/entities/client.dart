@@ -1,5 +1,5 @@
 class Client {
-  final String id;
+  final int? id;
   final String nombre;
   final String cedula;
   final String telefono;
@@ -7,7 +7,7 @@ class Client {
   final String? email;
 
   const Client({
-    required this.id,
+    this.id,
     required this.nombre,
     required this.cedula,
     required this.telefono,
@@ -16,7 +16,7 @@ class Client {
   });
 
   Client copyWith({
-    String? id,
+    int? id,
     String? nombre,
     String? cedula,
     String? telefono,
@@ -30,6 +30,28 @@ class Client {
       telefono: telefono ?? this.telefono,
       direccion: direccion ?? this.direccion,
       email: email ?? this.email,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'nombre': nombre,
+      'cedula': cedula,
+      'telefono': telefono,
+      'direccion': direccion,
+      'email': email,
+    };
+  }
+
+  factory Client.fromMap(Map<String, dynamic> map) {
+    return Client(
+      id: map['id'] as int?,
+      nombre: map['nombre'] as String,
+      cedula: map['cedula'] as String,
+      telefono: map['telefono'] as String,
+      direccion: map['direccion'] as String?,
+      email: map['email'] as String?,
     );
   }
 }

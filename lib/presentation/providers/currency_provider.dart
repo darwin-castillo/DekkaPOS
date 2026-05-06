@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import '../../data/daos/currency_dao.dart';
+import '../../data/daos/settings_dao.dart';
 import '../../domain/entities/currency.dart';
 
 class CurrencyProvider extends ChangeNotifier {
   final CurrencyDao _currencyDao = CurrencyDao();
+  final SettingsDao _settingsDao = SettingsDao();
   
   List<Currency> _currencies = [];
   bool _isLoading = false;
@@ -36,6 +38,8 @@ class CurrencyProvider extends ChangeNotifier {
 
   Future<int> setBaseCurrency(int id) async {
     final idResult = await _currencyDao.setBaseCurrency(id);
+    await _settingsDao.setValue('additional_currency_1', '');
+    await _settingsDao.setValue('additional_currency_2', '');
     await loadCurrencies();
     return idResult;
   }

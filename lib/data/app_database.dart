@@ -59,7 +59,7 @@ class Invoices extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get numero => text().unique()();
   DateTimeColumn get fecha => dateTime()();
-  TextColumn get clienteId => text().nullable()();
+  IntColumn get clienteId => integer().nullable()();
   RealColumn get subtotal => real().withDefault(const Constant(0))();
   RealColumn get tax => real().withDefault(const Constant(0))();
   RealColumn get discount => real().withDefault(const Constant(0))();
@@ -90,32 +90,37 @@ class Settings extends Table {
   TextColumn get value => text()();
 }
 
-@DriftDatabase(tables: [Categories, Providers, Products, Currencies, ExchangeRates, Invoices, InvoiceItems, Settings])
+@DataClassName('ClientEnt')
+class Clients extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get nombre => text()();
+  TextColumn get cedula => text()();
+  TextColumn get telefono => text()();
+  TextColumn get direccion => text().nullable()();
+  TextColumn get email => text().nullable()();
+}
+
+@DriftDatabase(tables: [Categories, Providers, Products, Currencies, ExchangeRates, Invoices, InvoiceItems, Settings, Clients])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 1;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
         await m.createAll();
+        await into(currencies).insert(CurrenciesCompanion.insert(
+          code: 'USD',
+          symbol: r'$',
+          name: 'Dólar',
+          isBase: const Value(true),
+        ));
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        if (from < 2) {
-          await m.createTable(currencies);
-          await m.createTable(exchangeRates);
-        }
-        if (from < 3) {
-          await m.addColumn(currencies, currencies.isBase);
-        }
-        if (from < 4) {
-          await m.createTable(invoices);
-          await m.createTable(invoiceItems);
-          await m.createTable(settings);
-        }
+        // Future migrations will go here
       },
     );
   }

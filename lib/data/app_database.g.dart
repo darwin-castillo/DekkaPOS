@@ -1980,11 +1980,11 @@ class $InvoicesTable extends Invoices
     'clienteId',
   );
   @override
-  late final GeneratedColumn<String> clienteId = GeneratedColumn<String>(
+  late final GeneratedColumn<int> clienteId = GeneratedColumn<int>(
     'cliente_id',
     aliasedName,
     true,
-    type: DriftSqlType.string,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
   static const VerificationMeta _subtotalMeta = const VerificationMeta(
@@ -2225,7 +2225,7 @@ class $InvoicesTable extends Invoices
         data['${effectivePrefix}fecha'],
       )!,
       clienteId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        DriftSqlType.int,
         data['${effectivePrefix}cliente_id'],
       ),
       subtotal: attachedDatabase.typeMapping.read(
@@ -2277,7 +2277,7 @@ class InvoiceEnt extends DataClass implements Insertable<InvoiceEnt> {
   final int id;
   final String numero;
   final DateTime fecha;
-  final String? clienteId;
+  final int? clienteId;
   final double subtotal;
   final double tax;
   final double discount;
@@ -2309,7 +2309,7 @@ class InvoiceEnt extends DataClass implements Insertable<InvoiceEnt> {
     map['numero'] = Variable<String>(numero);
     map['fecha'] = Variable<DateTime>(fecha);
     if (!nullToAbsent || clienteId != null) {
-      map['cliente_id'] = Variable<String>(clienteId);
+      map['cliente_id'] = Variable<int>(clienteId);
     }
     map['subtotal'] = Variable<double>(subtotal);
     map['tax'] = Variable<double>(tax);
@@ -2356,7 +2356,7 @@ class InvoiceEnt extends DataClass implements Insertable<InvoiceEnt> {
       id: serializer.fromJson<int>(json['id']),
       numero: serializer.fromJson<String>(json['numero']),
       fecha: serializer.fromJson<DateTime>(json['fecha']),
-      clienteId: serializer.fromJson<String?>(json['clienteId']),
+      clienteId: serializer.fromJson<int?>(json['clienteId']),
       subtotal: serializer.fromJson<double>(json['subtotal']),
       tax: serializer.fromJson<double>(json['tax']),
       discount: serializer.fromJson<double>(json['discount']),
@@ -2375,7 +2375,7 @@ class InvoiceEnt extends DataClass implements Insertable<InvoiceEnt> {
       'id': serializer.toJson<int>(id),
       'numero': serializer.toJson<String>(numero),
       'fecha': serializer.toJson<DateTime>(fecha),
-      'clienteId': serializer.toJson<String?>(clienteId),
+      'clienteId': serializer.toJson<int?>(clienteId),
       'subtotal': serializer.toJson<double>(subtotal),
       'tax': serializer.toJson<double>(tax),
       'discount': serializer.toJson<double>(discount),
@@ -2392,7 +2392,7 @@ class InvoiceEnt extends DataClass implements Insertable<InvoiceEnt> {
     int? id,
     String? numero,
     DateTime? fecha,
-    Value<String?> clienteId = const Value.absent(),
+    Value<int?> clienteId = const Value.absent(),
     double? subtotal,
     double? tax,
     double? discount,
@@ -2502,7 +2502,7 @@ class InvoicesCompanion extends UpdateCompanion<InvoiceEnt> {
   final Value<int> id;
   final Value<String> numero;
   final Value<DateTime> fecha;
-  final Value<String?> clienteId;
+  final Value<int?> clienteId;
   final Value<double> subtotal;
   final Value<double> tax;
   final Value<double> discount;
@@ -2549,7 +2549,7 @@ class InvoicesCompanion extends UpdateCompanion<InvoiceEnt> {
     Expression<int>? id,
     Expression<String>? numero,
     Expression<DateTime>? fecha,
-    Expression<String>? clienteId,
+    Expression<int>? clienteId,
     Expression<double>? subtotal,
     Expression<double>? tax,
     Expression<double>? discount,
@@ -2581,7 +2581,7 @@ class InvoicesCompanion extends UpdateCompanion<InvoiceEnt> {
     Value<int>? id,
     Value<String>? numero,
     Value<DateTime>? fecha,
-    Value<String?>? clienteId,
+    Value<int?>? clienteId,
     Value<double>? subtotal,
     Value<double>? tax,
     Value<double>? discount,
@@ -2622,7 +2622,7 @@ class InvoicesCompanion extends UpdateCompanion<InvoiceEnt> {
       map['fecha'] = Variable<DateTime>(fecha.value);
     }
     if (clienteId.present) {
-      map['cliente_id'] = Variable<String>(clienteId.value);
+      map['cliente_id'] = Variable<int>(clienteId.value);
     }
     if (subtotal.present) {
       map['subtotal'] = Variable<double>(subtotal.value);
@@ -3435,6 +3435,401 @@ class SettingsCompanion extends UpdateCompanion<SettingsEnt> {
   }
 }
 
+class $ClientsTable extends Clients with TableInfo<$ClientsTable, ClientEnt> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ClientsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nombreMeta = const VerificationMeta('nombre');
+  @override
+  late final GeneratedColumn<String> nombre = GeneratedColumn<String>(
+    'nombre',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cedulaMeta = const VerificationMeta('cedula');
+  @override
+  late final GeneratedColumn<String> cedula = GeneratedColumn<String>(
+    'cedula',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _telefonoMeta = const VerificationMeta(
+    'telefono',
+  );
+  @override
+  late final GeneratedColumn<String> telefono = GeneratedColumn<String>(
+    'telefono',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _direccionMeta = const VerificationMeta(
+    'direccion',
+  );
+  @override
+  late final GeneratedColumn<String> direccion = GeneratedColumn<String>(
+    'direccion',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _emailMeta = const VerificationMeta('email');
+  @override
+  late final GeneratedColumn<String> email = GeneratedColumn<String>(
+    'email',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    nombre,
+    cedula,
+    telefono,
+    direccion,
+    email,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'clients';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ClientEnt> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('nombre')) {
+      context.handle(
+        _nombreMeta,
+        nombre.isAcceptableOrUnknown(data['nombre']!, _nombreMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nombreMeta);
+    }
+    if (data.containsKey('cedula')) {
+      context.handle(
+        _cedulaMeta,
+        cedula.isAcceptableOrUnknown(data['cedula']!, _cedulaMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cedulaMeta);
+    }
+    if (data.containsKey('telefono')) {
+      context.handle(
+        _telefonoMeta,
+        telefono.isAcceptableOrUnknown(data['telefono']!, _telefonoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_telefonoMeta);
+    }
+    if (data.containsKey('direccion')) {
+      context.handle(
+        _direccionMeta,
+        direccion.isAcceptableOrUnknown(data['direccion']!, _direccionMeta),
+      );
+    }
+    if (data.containsKey('email')) {
+      context.handle(
+        _emailMeta,
+        email.isAcceptableOrUnknown(data['email']!, _emailMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ClientEnt map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ClientEnt(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      nombre: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nombre'],
+      )!,
+      cedula: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cedula'],
+      )!,
+      telefono: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}telefono'],
+      )!,
+      direccion: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}direccion'],
+      ),
+      email: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}email'],
+      ),
+    );
+  }
+
+  @override
+  $ClientsTable createAlias(String alias) {
+    return $ClientsTable(attachedDatabase, alias);
+  }
+}
+
+class ClientEnt extends DataClass implements Insertable<ClientEnt> {
+  final int id;
+  final String nombre;
+  final String cedula;
+  final String telefono;
+  final String? direccion;
+  final String? email;
+  const ClientEnt({
+    required this.id,
+    required this.nombre,
+    required this.cedula,
+    required this.telefono,
+    this.direccion,
+    this.email,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['nombre'] = Variable<String>(nombre);
+    map['cedula'] = Variable<String>(cedula);
+    map['telefono'] = Variable<String>(telefono);
+    if (!nullToAbsent || direccion != null) {
+      map['direccion'] = Variable<String>(direccion);
+    }
+    if (!nullToAbsent || email != null) {
+      map['email'] = Variable<String>(email);
+    }
+    return map;
+  }
+
+  ClientsCompanion toCompanion(bool nullToAbsent) {
+    return ClientsCompanion(
+      id: Value(id),
+      nombre: Value(nombre),
+      cedula: Value(cedula),
+      telefono: Value(telefono),
+      direccion: direccion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(direccion),
+      email: email == null && nullToAbsent
+          ? const Value.absent()
+          : Value(email),
+    );
+  }
+
+  factory ClientEnt.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ClientEnt(
+      id: serializer.fromJson<int>(json['id']),
+      nombre: serializer.fromJson<String>(json['nombre']),
+      cedula: serializer.fromJson<String>(json['cedula']),
+      telefono: serializer.fromJson<String>(json['telefono']),
+      direccion: serializer.fromJson<String?>(json['direccion']),
+      email: serializer.fromJson<String?>(json['email']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'nombre': serializer.toJson<String>(nombre),
+      'cedula': serializer.toJson<String>(cedula),
+      'telefono': serializer.toJson<String>(telefono),
+      'direccion': serializer.toJson<String?>(direccion),
+      'email': serializer.toJson<String?>(email),
+    };
+  }
+
+  ClientEnt copyWith({
+    int? id,
+    String? nombre,
+    String? cedula,
+    String? telefono,
+    Value<String?> direccion = const Value.absent(),
+    Value<String?> email = const Value.absent(),
+  }) => ClientEnt(
+    id: id ?? this.id,
+    nombre: nombre ?? this.nombre,
+    cedula: cedula ?? this.cedula,
+    telefono: telefono ?? this.telefono,
+    direccion: direccion.present ? direccion.value : this.direccion,
+    email: email.present ? email.value : this.email,
+  );
+  ClientEnt copyWithCompanion(ClientsCompanion data) {
+    return ClientEnt(
+      id: data.id.present ? data.id.value : this.id,
+      nombre: data.nombre.present ? data.nombre.value : this.nombre,
+      cedula: data.cedula.present ? data.cedula.value : this.cedula,
+      telefono: data.telefono.present ? data.telefono.value : this.telefono,
+      direccion: data.direccion.present ? data.direccion.value : this.direccion,
+      email: data.email.present ? data.email.value : this.email,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClientEnt(')
+          ..write('id: $id, ')
+          ..write('nombre: $nombre, ')
+          ..write('cedula: $cedula, ')
+          ..write('telefono: $telefono, ')
+          ..write('direccion: $direccion, ')
+          ..write('email: $email')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, nombre, cedula, telefono, direccion, email);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ClientEnt &&
+          other.id == this.id &&
+          other.nombre == this.nombre &&
+          other.cedula == this.cedula &&
+          other.telefono == this.telefono &&
+          other.direccion == this.direccion &&
+          other.email == this.email);
+}
+
+class ClientsCompanion extends UpdateCompanion<ClientEnt> {
+  final Value<int> id;
+  final Value<String> nombre;
+  final Value<String> cedula;
+  final Value<String> telefono;
+  final Value<String?> direccion;
+  final Value<String?> email;
+  const ClientsCompanion({
+    this.id = const Value.absent(),
+    this.nombre = const Value.absent(),
+    this.cedula = const Value.absent(),
+    this.telefono = const Value.absent(),
+    this.direccion = const Value.absent(),
+    this.email = const Value.absent(),
+  });
+  ClientsCompanion.insert({
+    this.id = const Value.absent(),
+    required String nombre,
+    required String cedula,
+    required String telefono,
+    this.direccion = const Value.absent(),
+    this.email = const Value.absent(),
+  }) : nombre = Value(nombre),
+       cedula = Value(cedula),
+       telefono = Value(telefono);
+  static Insertable<ClientEnt> custom({
+    Expression<int>? id,
+    Expression<String>? nombre,
+    Expression<String>? cedula,
+    Expression<String>? telefono,
+    Expression<String>? direccion,
+    Expression<String>? email,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (nombre != null) 'nombre': nombre,
+      if (cedula != null) 'cedula': cedula,
+      if (telefono != null) 'telefono': telefono,
+      if (direccion != null) 'direccion': direccion,
+      if (email != null) 'email': email,
+    });
+  }
+
+  ClientsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? nombre,
+    Value<String>? cedula,
+    Value<String>? telefono,
+    Value<String?>? direccion,
+    Value<String?>? email,
+  }) {
+    return ClientsCompanion(
+      id: id ?? this.id,
+      nombre: nombre ?? this.nombre,
+      cedula: cedula ?? this.cedula,
+      telefono: telefono ?? this.telefono,
+      direccion: direccion ?? this.direccion,
+      email: email ?? this.email,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (nombre.present) {
+      map['nombre'] = Variable<String>(nombre.value);
+    }
+    if (cedula.present) {
+      map['cedula'] = Variable<String>(cedula.value);
+    }
+    if (telefono.present) {
+      map['telefono'] = Variable<String>(telefono.value);
+    }
+    if (direccion.present) {
+      map['direccion'] = Variable<String>(direccion.value);
+    }
+    if (email.present) {
+      map['email'] = Variable<String>(email.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClientsCompanion(')
+          ..write('id: $id, ')
+          ..write('nombre: $nombre, ')
+          ..write('cedula: $cedula, ')
+          ..write('telefono: $telefono, ')
+          ..write('direccion: $direccion, ')
+          ..write('email: $email')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3446,6 +3841,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $InvoicesTable invoices = $InvoicesTable(this);
   late final $InvoiceItemsTable invoiceItems = $InvoiceItemsTable(this);
   late final $SettingsTable settings = $SettingsTable(this);
+  late final $ClientsTable clients = $ClientsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3459,6 +3855,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     invoices,
     invoiceItems,
     settings,
+    clients,
   ];
 }
 
@@ -5432,7 +5829,7 @@ typedef $$InvoicesTableCreateCompanionBuilder =
       Value<int> id,
       required String numero,
       required DateTime fecha,
-      Value<String?> clienteId,
+      Value<int?> clienteId,
       Value<double> subtotal,
       Value<double> tax,
       Value<double> discount,
@@ -5448,7 +5845,7 @@ typedef $$InvoicesTableUpdateCompanionBuilder =
       Value<int> id,
       Value<String> numero,
       Value<DateTime> fecha,
-      Value<String?> clienteId,
+      Value<int?> clienteId,
       Value<double> subtotal,
       Value<double> tax,
       Value<double> discount,
@@ -5507,7 +5904,7 @@ class $$InvoicesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get clienteId => $composableBuilder(
+  ColumnFilters<int> get clienteId => $composableBuilder(
     column: $table.clienteId,
     builder: (column) => ColumnFilters(column),
   );
@@ -5607,7 +6004,7 @@ class $$InvoicesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get clienteId => $composableBuilder(
+  ColumnOrderings<int> get clienteId => $composableBuilder(
     column: $table.clienteId,
     builder: (column) => ColumnOrderings(column),
   );
@@ -5676,7 +6073,7 @@ class $$InvoicesTableAnnotationComposer
   GeneratedColumn<DateTime> get fecha =>
       $composableBuilder(column: $table.fecha, builder: (column) => column);
 
-  GeneratedColumn<String> get clienteId =>
+  GeneratedColumn<int> get clienteId =>
       $composableBuilder(column: $table.clienteId, builder: (column) => column);
 
   GeneratedColumn<double> get subtotal =>
@@ -5769,7 +6166,7 @@ class $$InvoicesTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<String> numero = const Value.absent(),
                 Value<DateTime> fecha = const Value.absent(),
-                Value<String?> clienteId = const Value.absent(),
+                Value<int?> clienteId = const Value.absent(),
                 Value<double> subtotal = const Value.absent(),
                 Value<double> tax = const Value.absent(),
                 Value<double> discount = const Value.absent(),
@@ -5799,7 +6196,7 @@ class $$InvoicesTableTableManager
                 Value<int> id = const Value.absent(),
                 required String numero,
                 required DateTime fecha,
-                Value<String?> clienteId = const Value.absent(),
+                Value<int?> clienteId = const Value.absent(),
                 Value<double> subtotal = const Value.absent(),
                 Value<double> tax = const Value.absent(),
                 Value<double> discount = const Value.absent(),
@@ -6486,6 +6883,213 @@ typedef $$SettingsTableProcessedTableManager =
       SettingsEnt,
       PrefetchHooks Function()
     >;
+typedef $$ClientsTableCreateCompanionBuilder =
+    ClientsCompanion Function({
+      Value<int> id,
+      required String nombre,
+      required String cedula,
+      required String telefono,
+      Value<String?> direccion,
+      Value<String?> email,
+    });
+typedef $$ClientsTableUpdateCompanionBuilder =
+    ClientsCompanion Function({
+      Value<int> id,
+      Value<String> nombre,
+      Value<String> cedula,
+      Value<String> telefono,
+      Value<String?> direccion,
+      Value<String?> email,
+    });
+
+class $$ClientsTableFilterComposer
+    extends Composer<_$AppDatabase, $ClientsTable> {
+  $$ClientsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nombre => $composableBuilder(
+    column: $table.nombre,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cedula => $composableBuilder(
+    column: $table.cedula,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get telefono => $composableBuilder(
+    column: $table.telefono,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get direccion => $composableBuilder(
+    column: $table.direccion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get email => $composableBuilder(
+    column: $table.email,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ClientsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ClientsTable> {
+  $$ClientsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nombre => $composableBuilder(
+    column: $table.nombre,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cedula => $composableBuilder(
+    column: $table.cedula,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get telefono => $composableBuilder(
+    column: $table.telefono,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get direccion => $composableBuilder(
+    column: $table.direccion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get email => $composableBuilder(
+    column: $table.email,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ClientsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ClientsTable> {
+  $$ClientsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get nombre =>
+      $composableBuilder(column: $table.nombre, builder: (column) => column);
+
+  GeneratedColumn<String> get cedula =>
+      $composableBuilder(column: $table.cedula, builder: (column) => column);
+
+  GeneratedColumn<String> get telefono =>
+      $composableBuilder(column: $table.telefono, builder: (column) => column);
+
+  GeneratedColumn<String> get direccion =>
+      $composableBuilder(column: $table.direccion, builder: (column) => column);
+
+  GeneratedColumn<String> get email =>
+      $composableBuilder(column: $table.email, builder: (column) => column);
+}
+
+class $$ClientsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ClientsTable,
+          ClientEnt,
+          $$ClientsTableFilterComposer,
+          $$ClientsTableOrderingComposer,
+          $$ClientsTableAnnotationComposer,
+          $$ClientsTableCreateCompanionBuilder,
+          $$ClientsTableUpdateCompanionBuilder,
+          (ClientEnt, BaseReferences<_$AppDatabase, $ClientsTable, ClientEnt>),
+          ClientEnt,
+          PrefetchHooks Function()
+        > {
+  $$ClientsTableTableManager(_$AppDatabase db, $ClientsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ClientsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ClientsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ClientsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> nombre = const Value.absent(),
+                Value<String> cedula = const Value.absent(),
+                Value<String> telefono = const Value.absent(),
+                Value<String?> direccion = const Value.absent(),
+                Value<String?> email = const Value.absent(),
+              }) => ClientsCompanion(
+                id: id,
+                nombre: nombre,
+                cedula: cedula,
+                telefono: telefono,
+                direccion: direccion,
+                email: email,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String nombre,
+                required String cedula,
+                required String telefono,
+                Value<String?> direccion = const Value.absent(),
+                Value<String?> email = const Value.absent(),
+              }) => ClientsCompanion.insert(
+                id: id,
+                nombre: nombre,
+                cedula: cedula,
+                telefono: telefono,
+                direccion: direccion,
+                email: email,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ClientsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ClientsTable,
+      ClientEnt,
+      $$ClientsTableFilterComposer,
+      $$ClientsTableOrderingComposer,
+      $$ClientsTableAnnotationComposer,
+      $$ClientsTableCreateCompanionBuilder,
+      $$ClientsTableUpdateCompanionBuilder,
+      (ClientEnt, BaseReferences<_$AppDatabase, $ClientsTable, ClientEnt>),
+      ClientEnt,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6506,4 +7110,6 @@ class $AppDatabaseManager {
       $$InvoiceItemsTableTableManager(_db, _db.invoiceItems);
   $$SettingsTableTableManager get settings =>
       $$SettingsTableTableManager(_db, _db.settings);
+  $$ClientsTableTableManager get clients =>
+      $$ClientsTableTableManager(_db, _db.clients);
 }

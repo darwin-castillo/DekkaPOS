@@ -14,7 +14,8 @@ class ConfiguracionScreen extends StatefulWidget {
   State<ConfiguracionScreen> createState() => _ConfiguracionScreenState();
 }
 
-class _ConfiguracionScreenState extends State<ConfiguracionScreen> with SingleTickerProviderStateMixin {
+class _ConfiguracionScreenState extends State<ConfiguracionScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -100,9 +101,16 @@ class _MonedasTab extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.attach_money, size: 64, color: Colors.grey.shade400),
+                  Icon(
+                    Icons.attach_money,
+                    size: 64,
+                    color: Colors.grey.shade400,
+                  ),
                   const SizedBox(height: 16),
-                  Text('No hay monedas', style: TextStyle(fontSize: 18, color: Colors.grey.shade600)),
+                  Text(
+                    'No hay monedas',
+                    style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
+                  ),
                   const SizedBox(height: 8),
                   ElevatedButton.icon(
                     onPressed: () => _showCurrencyDialog(context),
@@ -125,7 +133,10 @@ class _MonedasTab extends StatelessWidget {
                     backgroundColor: colorScheme.primaryContainer,
                     child: Text(
                       c.symbol,
-                      style: TextStyle(color: colorScheme.onPrimaryContainer, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   title: Row(
@@ -134,11 +145,18 @@ class _MonedasTab extends StatelessWidget {
                       if (c.isBase) ...[
                         const SizedBox(width: 8),
                         Chip(
-                          label: const Text('BASE', style: TextStyle(fontSize: 10)),
+                          label: const Text(
+                            'BASE',
+                            style: TextStyle(fontSize: 10),
+                          ),
                           backgroundColor: colorScheme.primaryContainer,
-                          labelStyle: TextStyle(color: colorScheme.onPrimaryContainer, fontSize: 10),
+                          labelStyle: TextStyle(
+                            color: colorScheme.onPrimaryContainer,
+                            fontSize: 10,
+                          ),
                           padding: EdgeInsets.zero,
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
                         ),
                       ],
                     ],
@@ -147,10 +165,17 @@ class _MonedasTab extends StatelessWidget {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(c.symbol, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(
+                        c.symbol,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
                       IconButton(
                         icon: Icon(Icons.edit, color: colorScheme.primary),
-                        onPressed: () => _showCurrencyDialog(context, currency: c),
+                        onPressed: () =>
+                            _showCurrencyDialog(context, currency: c),
                       ),
                       IconButton(
                         icon: Icon(Icons.delete, color: colorScheme.error),
@@ -181,13 +206,19 @@ class _MonedasTab extends StatelessWidget {
         title: const Text('Eliminar moneda'),
         content: Text('¿Eliminar "$name"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
           ElevatedButton(
             onPressed: () {
               context.read<CurrencyProvider>().delete(id);
               Navigator.pop(context);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Eliminar'),
           ),
         ],
@@ -217,7 +248,9 @@ class __CurrencyFormDialogState extends State<_CurrencyFormDialog> {
   void initState() {
     super.initState();
     _codeController = TextEditingController(text: widget.currency?.code ?? '');
-    _symbolController = TextEditingController(text: widget.currency?.symbol ?? '');
+    _symbolController = TextEditingController(
+      text: widget.currency?.symbol ?? '',
+    );
     _nameController = TextEditingController(text: widget.currency?.name ?? '');
     _isBase = widget.currency?.isBase ?? false;
   }
@@ -241,19 +274,25 @@ class __CurrencyFormDialogState extends State<_CurrencyFormDialog> {
           children: [
             TextFormField(
               controller: _codeController,
-              decoration: const InputDecoration(labelText: 'Código * (ej: USD)'),
+              decoration: const InputDecoration(
+                labelText: 'Código * (ej: USD)',
+              ),
               validator: (v) => v?.isEmpty == true ? 'Requerido' : null,
             ),
             const SizedBox(height: 8),
             TextFormField(
               controller: _symbolController,
-              decoration: const InputDecoration(labelText: 'Símbolo * (ej: \$)'),
+              decoration: const InputDecoration(
+                labelText: 'Símbolo * (ej: \$)',
+              ),
               validator: (v) => v?.isEmpty == true ? 'Requerido' : null,
             ),
             const SizedBox(height: 8),
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Nombre * (ej: Dólar)'),
+              decoration: const InputDecoration(
+                labelText: 'Nombre * (ej: Dólar)',
+              ),
               validator: (v) => v?.isEmpty == true ? 'Requerido' : null,
             ),
             const SizedBox(height: 12),
@@ -267,8 +306,14 @@ class __CurrencyFormDialogState extends State<_CurrencyFormDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-        ElevatedButton(onPressed: _save, child: Text(isEditing ? 'Guardar' : 'Crear')),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: _save,
+          child: Text(isEditing ? 'Guardar' : 'Crear'),
+        ),
       ],
     );
   }
@@ -323,11 +368,21 @@ class _TasasTab extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.currency_exchange, size: 64, color: Colors.grey.shade400),
+                  Icon(
+                    Icons.currency_exchange,
+                    size: 64,
+                    color: Colors.grey.shade400,
+                  ),
                   const SizedBox(height: 16),
-                  Text('Se necesitan al menos 2 monedas', style: TextStyle(fontSize: 18, color: Colors.grey.shade600)),
+                  Text(
+                    'Se necesitan al menos 2 monedas',
+                    style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
+                  ),
                   const SizedBox(height: 8),
-                  const Text('Agrega más monedas en la pestaña Monedas', style: TextStyle(color: Colors.grey)),
+                  const Text(
+                    'Agrega más monedas en la pestaña Monedas',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ],
               ),
             );
@@ -338,9 +393,16 @@ class _TasasTab extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.currency_exchange, size: 64, color: Colors.grey.shade400),
+                  Icon(
+                    Icons.currency_exchange,
+                    size: 64,
+                    color: Colors.grey.shade400,
+                  ),
                   const SizedBox(height: 16),
-                  Text('No hay tasas de cambio', style: TextStyle(fontSize: 18, color: Colors.grey.shade600)),
+                  Text(
+                    'No hay tasas de cambio',
+                    style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
+                  ),
                   const SizedBox(height: 8),
                   ElevatedButton.icon(
                     onPressed: () => _showExchangeRateDialog(context),
@@ -366,17 +428,29 @@ class _TasasTab extends StatelessWidget {
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: colorScheme.secondaryContainer,
-                    child: Icon(Icons.swap_horiz, color: colorScheme.onSecondaryContainer),
+                    child: Icon(
+                      Icons.swap_horiz,
+                      color: colorScheme.onSecondaryContainer,
+                    ),
                   ),
-                  title: Text('${getCurrencyName(r.fromId)} → ${getCurrencyName(r.toId)}'),
+                  title: Text(
+                    '${getCurrencyName(r.fromId)} → ${getCurrencyName(r.toId)}',
+                  ),
                   subtitle: Text('Actualizado: ${_formatDate(r.updatedAt)}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(r.value.toStringAsFixed(4), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(
+                        r.value.toStringAsFixed(4),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
                       IconButton(
                         icon: Icon(Icons.edit, color: colorScheme.primary),
-                        onPressed: () => _showExchangeRateDialog(context, exchangeRate: r),
+                        onPressed: () =>
+                            _showExchangeRateDialog(context, exchangeRate: r),
                       ),
                       IconButton(
                         icon: Icon(Icons.delete, color: colorScheme.error),
@@ -397,7 +471,10 @@ class _TasasTab extends StatelessWidget {
     return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
 
-  void _showExchangeRateDialog(BuildContext context, {ExchangeRate? exchangeRate}) {
+  void _showExchangeRateDialog(
+    BuildContext context, {
+    ExchangeRate? exchangeRate,
+  }) {
     showDialog(
       context: context,
       builder: (context) => _ExchangeRateFormDialog(exchangeRate: exchangeRate),
@@ -411,13 +488,19 @@ class _TasasTab extends StatelessWidget {
         title: const Text('Eliminar tasa'),
         content: const Text('¿Eliminar esta tasa de cambio?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
           ElevatedButton(
             onPressed: () {
               context.read<ExchangeRateProvider>().delete(id);
               Navigator.pop(context);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Eliminar'),
           ),
         ],
@@ -431,7 +514,8 @@ class _ExchangeRateFormDialog extends StatefulWidget {
   const _ExchangeRateFormDialog({super.key, this.exchangeRate});
 
   @override
-  State<_ExchangeRateFormDialog> createState() => __ExchangeRateFormDialogState();
+  State<_ExchangeRateFormDialog> createState() =>
+      __ExchangeRateFormDialogState();
 }
 
 class __ExchangeRateFormDialogState extends State<_ExchangeRateFormDialog> {
@@ -445,7 +529,9 @@ class __ExchangeRateFormDialogState extends State<_ExchangeRateFormDialog> {
   @override
   void initState() {
     super.initState();
-    _valueController = TextEditingController(text: widget.exchangeRate?.value.toString() ?? '1.0');
+    _valueController = TextEditingController(
+      text: widget.exchangeRate?.value.toString() ?? '1.0',
+    );
     _fromCurrencyId = widget.exchangeRate?.fromId;
     _toCurrencyId = widget.exchangeRate?.toId;
   }
@@ -471,7 +557,10 @@ class __ExchangeRateFormDialogState extends State<_ExchangeRateFormDialog> {
               initialValue: _fromCurrencyId,
               decoration: const InputDecoration(labelText: 'De moneda'),
               items: currencies.map((c) {
-                return DropdownMenuItem(value: c.id, child: Text('${c.code} - ${c.name}'));
+                return DropdownMenuItem(
+                  value: c.id,
+                  child: Text('${c.code} - ${c.name}'),
+                );
               }).toList(),
               onChanged: (value) => setState(() => _fromCurrencyId = value),
               validator: (v) => v == null ? 'Requerido' : null,
@@ -481,7 +570,10 @@ class __ExchangeRateFormDialogState extends State<_ExchangeRateFormDialog> {
               initialValue: _toCurrencyId,
               decoration: const InputDecoration(labelText: 'A moneda'),
               items: currencies.map((c) {
-                return DropdownMenuItem(value: c.id, child: Text('${c.code} - ${c.name}'));
+                return DropdownMenuItem(
+                  value: c.id,
+                  child: Text('${c.code} - ${c.name}'),
+                );
               }).toList(),
               onChanged: (value) => setState(() => _toCurrencyId = value),
               validator: (v) => v == null ? 'Requerido' : null,
@@ -497,8 +589,14 @@ class __ExchangeRateFormDialogState extends State<_ExchangeRateFormDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-        ElevatedButton(onPressed: _save, child: Text(isEditing ? 'Guardar' : 'Crear')),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: _save,
+          child: Text(isEditing ? 'Guardar' : 'Crear'),
+        ),
       ],
     );
   }
@@ -548,7 +646,10 @@ class _FacturasConfigTab extends StatelessWidget {
                     children: [
                       const Text(
                         'Monedas para Facturas',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       const Text(
@@ -557,33 +658,63 @@ class _FacturasConfigTab extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<int?>(
-                        initialValue: settings.additionalCurrency1Id,
+                        initialValue:
+                            currencies.currencies.indexWhere(
+                                  (c) => c.id == settings.additionalCurrency1Id,
+                                ) !=
+                                -1
+                            ? settings.additionalCurrency1Id
+                            : null,
                         decoration: const InputDecoration(
                           labelText: 'Moneda adicional 1',
                           prefixIcon: Icon(Icons.attach_money),
                         ),
                         items: [
-                          const DropdownMenuItem(value: null, child: Text('Ninguna')),
-                          ...currencies.currencies.where((c) => !c.isBase).map((c) {
-                            return DropdownMenuItem(value: c.id, child: Text('${c.code} - ${c.name}'));
+                          const DropdownMenuItem(
+                            value: null,
+                            child: Text('Ninguna'),
+                          ),
+                          ...currencies.currencies.where((c) => !c.isBase).map((
+                            c,
+                          ) {
+                            return DropdownMenuItem(
+                              value: c.id,
+                              child: Text('${c.code} - ${c.name}'),
+                            );
                           }),
                         ],
-                        onChanged: (value) => settings.setAdditionalCurrency1(value),
+                        onChanged: (value) =>
+                            settings.setAdditionalCurrency1(value),
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<int?>(
-                        initialValue: settings.additionalCurrency2Id,
+                        initialValue:
+                            currencies.currencies.indexWhere(
+                                  (c) => c.id == settings.additionalCurrency2Id,
+                                ) !=
+                                -1
+                            ? settings.additionalCurrency2Id
+                            : null,
                         decoration: const InputDecoration(
                           labelText: 'Moneda adicional 2',
                           prefixIcon: Icon(Icons.attach_money),
                         ),
                         items: [
-                          const DropdownMenuItem(value: null, child: Text('Ninguna')),
-                          ...currencies.currencies.where((c) => !c.isBase).map((c) {
-                            return DropdownMenuItem(value: c.id, child: Text('${c.code} - ${c.name}'));
+                          const DropdownMenuItem(
+                            value: null,
+                            child: Text('Ninguna'),
+                          ),
+                          ...currencies.currencies.where((c) => !c.isBase).map((
+                            c,
+                          ) {
+                            return DropdownMenuItem(
+                              value: c.id,
+                              child: Text('${c.code} - ${c.name}'),
+                            );
                           }),
                         ],
-                        onChanged: (value) => settings.setAdditionalCurrency2(value),
+                        onChanged: (value) =>
+                            settings.setAdditionalCurrency2(value),
                       ),
                     ],
                   ),
@@ -598,7 +729,10 @@ class _FacturasConfigTab extends StatelessWidget {
                     children: [
                       const Text(
                         'Impuesto',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       const Text(
@@ -629,7 +763,10 @@ class _FacturasConfigTab extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         'Ejemplo: 16 para 16% IVA',
-                        style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),

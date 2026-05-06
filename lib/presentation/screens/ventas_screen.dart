@@ -27,15 +27,9 @@ class VentasScreen extends StatelessWidget {
       ),
       body: Row(
         children: [
-          const Expanded(
-            flex: 2,
-            child: _ProductPanel(),
-          ),
+          const Expanded(flex: 2, child: _ProductPanel()),
           Container(width: 1, color: Colors.grey.shade300),
-          const Expanded(
-            flex: 3,
-            child: _CartPanel(),
-          ),
+          const Expanded(flex: 3, child: _CartPanel()),
         ],
       ),
     );
@@ -50,7 +44,7 @@ class _ProductPanel extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       color: colorScheme.surfaceContainerHighest,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -71,6 +65,8 @@ class _ProductPanel extends StatelessWidget {
                 hintText: 'Buscar producto...',
                 prefixIcon: Icon(Icons.search),
                 isDense: true,
+                filled: true,
+                fillColor: Colors.white,
               ),
               onChanged: provider.search,
             ),
@@ -79,25 +75,23 @@ class _ProductPanel extends StatelessWidget {
           Expanded(
             child: Consumer<ProductProvider>(
               builder: (context, provider, _) {
-                final products = provider.filteredProducts.isEmpty 
-                    ? provider.products 
+                final products = provider.filteredProducts.isEmpty
+                    ? provider.products
                     : provider.filteredProducts;
                 if (products.isEmpty) {
                   return const Center(child: Text('No hay productos'));
                 }
-                return GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    childAspectRatio: 1.2,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
+                return Card(
+                  elevation: 2,
+                  child: ListView.separated(
+                    itemCount: products.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final p = products[index];
+                      final isKg = p.unit == SaleUnit.kilogramo;
+                      return _ProductListItem(product: p, isKg: isKg);
+                    },
                   ),
-                  itemCount: products.length,
-                  itemBuilder: (context, index) {
-                    final p = products[index];
-                    final isKg = p.unit == SaleUnit.kilogramo;
-                    return _ProductCard(product: p, isKg: isKg);
-                  },
                 );
               },
             ),
@@ -108,50 +102,66 @@ class _ProductPanel extends StatelessWidget {
   }
 }
 
-class _ProductCard extends StatelessWidget {
+class _ProductListItem extends StatelessWidget {
   final Product product;
   final bool isKg;
 
-  const _ProductCard({required this.product, required this.isKg});
+  const _ProductListItem({required this.product, required this.isKg});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Card(
-      child: InkWell(
-        onTap: () => context.read<CartProvider>().addProduct(product),
-        onLongPress: isKg ? () => _showWeightDialog(context, product) : null,
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                isKg ? Icons.scale : Icons.shopping_bag,
-                size: 32,
-                color: colorScheme.primary,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                product.name,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Bs ${product.price.toStringAsFixed(2)}',
-                style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold),
-              ),
-              if (isKg) Text(
-                'kg',
-                style: TextStyle(fontSize: 10, color: Colors.grey),
-              ),
-            ],
-          ),
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: isKg
+            ? colorScheme.tertiaryContainer
+            : colorScheme.primaryContainer,
+        child: Icon(
+          isKg ? Icons.scale : Icons.shopping_bag,
+          color: isKg
+              ? colorScheme.onTertiaryContainer
+              : colorScheme.onPrimaryContainer,
         ),
       ),
+      title: Text(
+        product.name,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text('Código: ${product.code}'),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Bs ${product.price.toStringAsFixed(2)}',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: colorScheme.primary,
+            ),
+          ),
+          if (isKg) ...[
+            const SizedBox(width: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: colorScheme.tertiaryContainer,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                'kg',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: colorScheme.onTertiaryContainer,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+      onTap: () => context.read<CartProvider>().addProduct(product),
+      onLongPress: isKg ? () => _showWeightDialog(context, product) : null,
     );
   }
 
@@ -241,13 +251,19 @@ class _CartPanelState extends State<_CartPanel> {
                 return Consumer<ClientProvider>(
                   builder: (context, clientProvider, _) {
                     final cliente = clienteId != null
-                        ? clientProvider.clients.where((c) => c.id == clienteId).firstOrNull
+                        ? clientProvider.clients
+                              .where((c) => c.id == clienteId)
+                              .firstOrNull!
                         : null;
                     return InkWell(
-                      onTap: () => _showClientSelector(context, clientProvider.clients),
+                      onTap: () =>
+                          _showClientSelector(context, clientProvider.clients),
                       child: Row(
                         children: [
-                          Icon(Icons.person, color: colorScheme.onPrimaryContainer),
+                          Icon(
+                            Icons.person,
+                            color: colorScheme.onPrimaryContainer,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Column(
@@ -265,13 +281,17 @@ class _CartPanelState extends State<_CartPanel> {
                                     cliente.telefono,
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
+                                      color: colorScheme.onPrimaryContainer
+                                          .withValues(alpha: 0.7),
                                     ),
                                   ),
                               ],
                             ),
                           ),
-                          Icon(Icons.edit, color: colorScheme.onPrimaryContainer),
+                          Icon(
+                            Icons.edit,
+                            color: colorScheme.onPrimaryContainer,
+                          ),
                         ],
                       ),
                     );
@@ -294,7 +314,10 @@ class _CartPanelState extends State<_CartPanel> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Seleccionar Cliente', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Seleccionar Cliente',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             ListTile(
               leading: const Icon(Icons.person_off),
@@ -304,15 +327,17 @@ class _CartPanelState extends State<_CartPanel> {
                 Navigator.pop(ctx);
               },
             ),
-            ...clients.map((c) => ListTile(
-              leading: const Icon(Icons.person),
-              title: Text(c.nombre),
-              subtitle: Text(c.telefono),
-              onTap: () {
-                context.read<CartProvider>().setClienteId(c.id);
-                Navigator.pop(ctx);
-              },
-            )),
+            ...clients.map(
+              (c) => ListTile(
+                leading: const Icon(Icons.person),
+                title: Text(c.nombre),
+                subtitle: Text(c.telefono),
+                onTap: () {
+                  context.read<CartProvider>().setClienteId(c.id!);
+                  Navigator.pop(ctx);
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -320,7 +345,12 @@ class _CartPanelState extends State<_CartPanel> {
   }
 
   Widget _buildItemsList() {
-    return Consumer4<CartProvider, CurrencyProvider, ExchangeRateProvider, SettingsProvider>(
+    return Consumer4<
+      CartProvider,
+      CurrencyProvider,
+      ExchangeRateProvider,
+      SettingsProvider
+    >(
       builder: (context, cart, currencyProvider, rateProvider, settings, _) {
         if (cart.items.isEmpty) {
           return const Center(
@@ -335,64 +365,91 @@ class _CartPanelState extends State<_CartPanel> {
         final baseCurrency = currencyProvider.baseCurrency;
         final rates = rateProvider.exchangeRates;
         final additional1 = settings.additionalCurrency1Id != null
-            ? currencyProvider.currencies.where((c) => c.id == settings.additionalCurrency1Id).firstOrNull
+            ? currencyProvider.currencies
+                  .where((c) => c.id == settings.additionalCurrency1Id)
+                  .firstOrNull
             : null;
         final additional2 = settings.additionalCurrency2Id != null
-            ? currencyProvider.currencies.where((c) => c.id == settings.additionalCurrency2Id).firstOrNull
+            ? currencyProvider.currencies
+                  .where((c) => c.id == settings.additionalCurrency2Id)
+                  .firstOrNull
             : null;
 
         double? getConvertedPrice(double price, int toCurrencyId) {
           if (baseCurrency == null) return null;
-          final rate = rates.where((r) => r.fromId == baseCurrency.id && r.toId == toCurrencyId).firstOrNull;
+          final rate = rates
+              .where(
+                (r) => r.fromId == baseCurrency.id && r.toId == toCurrencyId,
+              )
+              .firstOrNull;
           return rate != null ? price * rate.value : null;
         }
 
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columnSpacing: 12,
-            headingRowColor: WidgetStateProperty.all(Colors.grey.shade200),
-            columns: [
-              const DataColumn(label: Text('Código', style: TextStyle(fontWeight: FontWeight.bold))),
-              const DataColumn(label: Text('Producto', style: TextStyle(fontWeight: FontWeight.bold))),
-              const DataColumn(label: Text('Cant.', style: TextStyle(fontWeight: FontWeight.bold)), numeric: true),
-              DataColumn(label: Text('P.Unit.', style: TextStyle(fontWeight: FontWeight.bold)), numeric: true),
-              if (additional1 != null) DataColumn(label: Text('Total ${additional1.code}', style: const TextStyle(fontWeight: FontWeight.bold)), numeric: true),
-              if (additional2 != null) DataColumn(label: Text('Total ${additional2.code}', style: const TextStyle(fontWeight: FontWeight.bold)), numeric: true),
-              DataColumn(label: Text('Total', style: TextStyle(fontWeight: FontWeight.bold)), numeric: true),
-              const DataColumn(label: Text('')),
-            ],
-            rows: List.generate(cart.items.length, (index) {
-              final item = cart.items[index];
-              final isKg = item.unit == SaleUnit.kilogramo;
-
-              final total1 = additional1 != null ? getConvertedPrice(item.total, additional1.id!) : null;
-              final total2 = additional2 != null ? getConvertedPrice(item.total, additional2.id!) : null;
-
-              return DataRow(
-                cells: [
-                  DataCell(Text(item.code, style: const TextStyle(fontSize: 11))),
-                  DataCell(Text(item.name, style: const TextStyle(fontSize: 11), overflow: TextOverflow.ellipsis, maxLines: 1)),
-                  DataCell(Text(isKg ? item.cantidad.toStringAsFixed(3) : item.cantidad.toStringAsFixed(0))),
-                  DataCell(Text('${baseCurrency?.symbol ?? 'Bs'} ${item.precio.toStringAsFixed(2)}')),
-                  if (additional1 != null) DataCell(Text(total1 != null ? '${additional1.symbol} ${total1.toStringAsFixed(2)}' : '-')),
-                  if (additional2 != null) DataCell(Text(total2 != null ? '${additional2.symbol} ${total2.toStringAsFixed(2)}' : '-')),
-                  DataCell(Text('${baseCurrency?.symbol ?? 'Bs'} ${item.total.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold))),
-                  DataCell(IconButton(
-                    icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                    onPressed: () => cart.removeItem(index),
-                  )),
-                ],
-              );
-            }),
-          ),
+        return DataTable(
+          columnSpacing: 12,
+          horizontalMargin: 12,
+          headingRowColor: WidgetStateProperty.all(Colors.grey.shade200),
+          columns: [
+            const DataColumn(
+              label: Text('Código', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            const DataColumn(
+              label: Text('Producto', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            const DataColumn(
+              label: Text('Cant.', style: TextStyle(fontWeight: FontWeight.bold)),
+              numeric: true,
+            ),
+            DataColumn(
+              label: Text('P.Unit.', style: TextStyle(fontWeight: FontWeight.bold)),
+              numeric: true,
+            ),
+            if (additional1 != null)
+              DataColumn(
+                label: Text('Total ${additional1.code}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                numeric: true,
+              ),
+            if (additional2 != null)
+              DataColumn(
+                label: Text('Total ${additional2.code}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                numeric: true,
+              ),
+            DataColumn(
+              label: Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
+              numeric: true,
+            ),
+            const DataColumn(label: Text('')),
+          ],
+          rows: List.generate(cart.items.length, (index) {
+            final item = cart.items[index];
+            final isKg = item.unit == SaleUnit.kilogramo;
+            final total1 = additional1 != null ? getConvertedPrice(item.total, additional1.id!) : null;
+            final total2 = additional2 != null ? getConvertedPrice(item.total, additional2.id!) : null;
+            return DataRow(
+              cells: [
+                DataCell(Text(item.code, style: const TextStyle(fontSize: 11))),
+                DataCell(Text(item.name, style: const TextStyle(fontSize: 11), overflow: TextOverflow.ellipsis, maxLines: 1)),
+                DataCell(Text(isKg ? item.cantidad.toStringAsFixed(3) : item.cantidad.toStringAsFixed(0))),
+                DataCell(Text('${baseCurrency?.symbol ?? 'Bs'} ${item.precio.toStringAsFixed(2)}')),
+                if (additional1 != null) DataCell(Text(total1 != null ? '${additional1.symbol} ${total1.toStringAsFixed(2)}' : '-')),
+                if (additional2 != null) DataCell(Text(total2 != null ? '${additional2.symbol} ${total2.toStringAsFixed(2)}' : '-')),
+                DataCell(Text('${baseCurrency?.symbol ?? 'Bs'} ${item.total.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold))),
+                DataCell(IconButton(icon: const Icon(Icons.delete, size: 18, color: Colors.red), onPressed: () => cart.removeItem(index))),
+              ],
+            );
+          }),
         );
       },
     );
   }
 
   Widget _buildTotals(BuildContext context) {
-    return Consumer4<CartProvider, CurrencyProvider, ExchangeRateProvider, SettingsProvider>(
+    return Consumer4<
+      CartProvider,
+      CurrencyProvider,
+      ExchangeRateProvider,
+      SettingsProvider
+    >(
       builder: (context, cart, currencyProvider, rateProvider, settings, _) {
         final baseCurrency = currencyProvider.baseCurrency;
         if (baseCurrency == null) {
@@ -406,19 +463,31 @@ class _CartPanelState extends State<_CartPanel> {
 
         final rates = rateProvider.exchangeRates;
         final additional1 = settings.additionalCurrency1Id != null
-            ? currencyProvider.currencies.where((c) => c.id == settings.additionalCurrency1Id).firstOrNull
+            ? currencyProvider.currencies
+                  .where((c) => c.id == settings.additionalCurrency1Id)
+                  .firstOrNull
             : null;
         final additional2 = settings.additionalCurrency2Id != null
-            ? currencyProvider.currencies.where((c) => c.id == settings.additionalCurrency2Id).firstOrNull
+            ? currencyProvider.currencies
+                  .where((c) => c.id == settings.additionalCurrency2Id)
+                  .firstOrNull
             : null;
 
         double? getConvertedPrice(double price, int toCurrencyId) {
-          final rate = rates.where((r) => r.fromId == baseCurrency.id && r.toId == toCurrencyId).firstOrNull;
+          final rate = rates
+              .where(
+                (r) => r.fromId == baseCurrency.id && r.toId == toCurrencyId,
+              )
+              .firstOrNull;
           return rate != null ? price * rate.value : null;
         }
 
-        final converted1 = additional1 != null ? getConvertedPrice(total, additional1.id!) : null;
-        final converted2 = additional2 != null ? getConvertedPrice(total, additional2.id!) : null;
+        final converted1 = additional1 != null
+            ? getConvertedPrice(total, additional1.id!)
+            : null;
+        final converted2 = additional2 != null
+            ? getConvertedPrice(total, additional2.id!)
+            : null;
 
         return Container(
           padding: const EdgeInsets.all(16),
@@ -433,9 +502,17 @@ class _CartPanelState extends State<_CartPanel> {
               const Divider(),
               _buildTotalRow('TOTAL', total, baseCurrency.symbol, isBold: true),
               if (converted1 != null)
-                _buildTotalRow('Total ${additional1!.code}', converted1, additional1.symbol),
+                _buildTotalRow(
+                  'Total ${additional1!.code}',
+                  converted1,
+                  additional1.symbol,
+                ),
               if (converted2 != null)
-                _buildTotalRow('Total ${additional2!.code}', converted2, additional2.symbol),
+                _buildTotalRow(
+                  'Total ${additional2!.code}',
+                  converted2,
+                  additional2.symbol,
+                ),
             ],
           ),
         );
@@ -443,7 +520,12 @@ class _CartPanelState extends State<_CartPanel> {
     );
   }
 
-  Widget _buildTotalRow(String label, double amount, String symbol, {bool isBold = false}) {
+  Widget _buildTotalRow(
+    String label,
+    double amount,
+    String symbol, {
+    bool isBold = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -503,10 +585,7 @@ class _CartPanelState extends State<_CartPanel> {
   }
 
   void _showPaymentDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => const _PaymentDialog(),
-    );
+    showDialog(context: context, builder: (ctx) => const _PaymentDialog());
   }
 }
 
@@ -529,12 +608,14 @@ class __PaymentDialogState extends State<_PaymentDialog> {
         children: [
           const Text('Método de pago:'),
           const SizedBox(height: 8),
-          ...PaymentMethod.values.map((m) => RadioListTile<String>(
-            title: Text(m.label),
-            value: m.value,
-            groupValue: _metodoPago,
-            onChanged: (v) => setState(() => _metodoPago = v!),
-          )),
+          ...PaymentMethod.values.map(
+            (m) => RadioListTile<String>(
+              title: Text(m.label),
+              value: m.value,
+              groupValue: _metodoPago,
+              onChanged: (v) => setState(() => _metodoPago = v!),
+            ),
+          ),
         ],
       ),
       actions: [
@@ -578,18 +659,30 @@ class __PaymentDialogState extends State<_PaymentDialog> {
     final snapshot = <String, double>{};
 
     if (settings.additionalCurrency1Id != null) {
-      final rate = rates.where((r) =>
-          r.fromId == baseCurrency.id && r.toId == settings.additionalCurrency1Id).firstOrNull;
+      final rate = rates
+          .where(
+            (r) =>
+                r.fromId == baseCurrency.id &&
+                r.toId == settings.additionalCurrency1Id,
+          )
+          .firstOrNull;
       if (rate != null) {
-        snapshot['currency_${settings.additionalCurrency1Id}'] = total * rate.value;
+        snapshot['currency_${settings.additionalCurrency1Id}'] =
+            total * rate.value;
       }
     }
 
     if (settings.additionalCurrency2Id != null) {
-      final rate = rates.where((r) =>
-          r.fromId == baseCurrency.id && r.toId == settings.additionalCurrency2Id).firstOrNull;
+      final rate = rates
+          .where(
+            (r) =>
+                r.fromId == baseCurrency.id &&
+                r.toId == settings.additionalCurrency2Id,
+          )
+          .firstOrNull;
       if (rate != null) {
-        snapshot['currency_${settings.additionalCurrency2Id}'] = total * rate.value;
+        snapshot['currency_${settings.additionalCurrency2Id}'] =
+            total * rate.value;
       }
     }
 
@@ -607,14 +700,18 @@ class __PaymentDialogState extends State<_PaymentDialog> {
       totalSnapshot: snapshot.isNotEmpty ? snapshot : null,
     );
 
-    final items = cart.items.map((item) => InvoiceItem(
-      invoiceId: 0,
-      productoId: item.productId,
-      cantidad: item.cantidad,
-      precioUnitario: item.precio,
-      discount: item.discount,
-      subtotal: item.total,
-    )).toList();
+    final items = cart.items
+        .map(
+          (item) => InvoiceItem(
+            invoiceId: 0,
+            productoId: item.productId,
+            cantidad: item.cantidad,
+            precioUnitario: item.precio,
+            discount: item.discount,
+            subtotal: item.total,
+          ),
+        )
+        .toList();
 
     await invoiceProvider.create(invoice, items);
     cart.clear();

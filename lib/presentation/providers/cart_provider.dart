@@ -46,17 +46,17 @@ class CartItem {
 
 class CartProvider extends ChangeNotifier {
   final List<CartItem> _items = [];
-  String? _clienteId;
+  int? _clienteId;
   String _metodoPago = 'efectivo';
 
   List<CartItem> get items => List.unmodifiable(_items);
-  String? get clienteId => _clienteId;
+  int? get clienteId => _clienteId;
   String get metodoPago => _metodoPago;
 
   double get totalBs => _items.fold(0.0, (sum, item) => sum + item.totalWithDiscount);
   int get itemCount => _items.length;
 
-  void setClienteId(String? id) {
+  void setClienteId(int? id) {
     _clienteId = id;
     notifyListeners();
   }

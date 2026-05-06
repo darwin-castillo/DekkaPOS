@@ -15,6 +15,9 @@ class ProductosScreen extends StatefulWidget {
 }
 
 class _ProductosScreenState extends State<ProductosScreen> {
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -51,112 +54,175 @@ class _ProductosScreenState extends State<ProductosScreen> {
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
       ),
-      body: Consumer<ProductProvider>(
-        builder: (context, provider, _) {
-          if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final products = provider.products;
-
-          if (products.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey.shade400),
-                  const SizedBox(height: 16),
-                  Text('No hay productos', style: TextStyle(fontSize: 18, color: Colors.grey.shade600)),
-                  const SizedBox(height: 8),
-                  ElevatedButton.icon(
-                    onPressed: () => _showProductDialog(context),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Agregar producto'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
+      body: Column(
+        children: [
+          Padding(
             padding: const EdgeInsets.all(16),
-            itemCount: products.length,
-            itemBuilder: (context, index) {
-              final p = products[index];
-              final isKg = p.unit == SaleUnit.kilogramo;
-              return Card(
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: isKg ? colorScheme.tertiaryContainer : colorScheme.primaryContainer,
-                    child: Icon(
-                      isKg ? Icons.scale : Icons.shopping_bag,
-                      color: isKg ? colorScheme.onTertiaryContainer : colorScheme.onPrimaryContainer,
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Buscar productos...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                filled: true,
+                fillColor: colorScheme.surfaceContainerHighest.withAlpha(50),
+              ),
+              onChanged: (value) => setState(() => _searchQuery = value.toLowerCase()),
+            ),
+          ),
+          Expanded(
+            child: Consumer<ProductProvider>(
+              builder: (context, provider, _) {
+                if (provider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final products = provider.products.where((p) {
+                  if (_searchQuery.isEmpty) return true;
+                  return p.name.toLowerCase().contains(_searchQuery) ||
+                      p.code.toLowerCase().contains(_searchQuery);
+                }).toList();
+
+                if (products.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey.shade400),
+                        const SizedBox(height: 16),
+                        Text(
+                          _searchQuery.isEmpty ? 'No hay productos' : 'Sin resultados',
+                          style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
+                        ),
+                        const SizedBox(height: 8),
+                        ElevatedButton.icon(
+                          onPressed: () => _showProductDialog(context),
+                          icon: const Icon(Icons.add),
+                          label: const Text('Agregar producto'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SingleChildScrollView(
+                    child: DataTable(
+                      headingRowColor: WidgetStateProperty.all(colorScheme.primaryContainer.withAlpha(100)),
+                      columns: const [
+                        DataColumn(label: Text('Código')),
+                        DataColumn(label: Text('Nombre')),
+                        DataColumn(label: Text('Stock')),
+                        DataColumn(label: Text('Precio')),
+                        DataColumn(label: Text('Acciones')),
+                      ],
+                      rows: products.map((p) {
+                        final isKg = p.unit == SaleUnit.kilogramo;
+                        return DataRow(
+                          cells: [
+                            DataCell(Text(p.code)),
+                            DataCell(
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 12,
+                                    backgroundColor: isKg ? colorScheme.tertiaryContainer : colorScheme.primaryContainer,
+                                    child: Icon(
+                                      isKg ? Icons.scale : Icons.shopping_bag,
+                                      size: 14,
+                                      color: isKg ? colorScheme.onTertiaryContainer : colorScheme.onPrimaryContainer,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(p.name),
+                                ],
+                              ),
+                            ),
+                            DataCell(Text('${p.stock.toStringAsFixed(isKg ? 3 : 0)} ${p.unit.label}')),
+                            DataCell(
+                              Consumer3<CurrencyProvider, ExchangeRateProvider, SettingsProvider>(
+                                builder: (context, currencyProvider, rateProvider, settings, _) {
+                                  final baseCurrency = currencyProvider.baseCurrency;
+                                  if (baseCurrency == null) {
+                                    return Text('Bs ${p.price.toStringAsFixed(2)}');
+                                  }
+                                  final rates = rateProvider.exchangeRates;
+                                  final price1 = settings.additionalCurrency1Id != null
+                                      ? _getPrice(p.price, baseCurrency.id!, settings.additionalCurrency1Id!, rates)
+                                      : null;
+                                  final price2 = settings.additionalCurrency2Id != null
+                                      ? _getPrice(p.price, baseCurrency.id!, settings.additionalCurrency2Id!, rates)
+                                      : null;
+
+                                  final currency1 = price1 != null
+                                      ? currencyProvider.currencies.where((c) => c.id == settings.additionalCurrency1Id).firstOrNull
+                                      : null;
+                                  final currency2 = price2 != null
+                                      ? currencyProvider.currencies.where((c) => c.id == settings.additionalCurrency2Id).firstOrNull
+                                      : null;
+
+                                  return Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text('${baseCurrency.symbol} ${p.price.toStringAsFixed(2)}',
+                                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                                      if (currency1 != null && price1 != null) ...[
+                                        const SizedBox(width: 8),
+                                        Text('${currency1.symbol} ${price1.toStringAsFixed(2)}'),
+                                      ],
+                                      if (currency2 != null && price2 != null) ...[
+                                        const SizedBox(width: 8),
+                                        Text('${currency2.symbol} ${price2.toStringAsFixed(2)}'),
+                                      ],
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                            DataCell(
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.edit, color: colorScheme.primary),
+                                    onPressed: () => _showProductDialog(context, product: p),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.delete, color: colorScheme.error),
+                                    onPressed: () => _confirmDelete(context, p.id!, p.name),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      }).toList(),
                     ),
                   ),
-                  title: Text(p.name),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Código: ${p.code} • Stock: ${p.stock.toStringAsFixed(isKg ? 3 : 0)} ${p.unit.label}'),
-                      Consumer3<CurrencyProvider, ExchangeRateProvider, SettingsProvider>(
-                        builder: (context, currencyProvider, rateProvider, settings, _) {
-                          final baseCurrency = currencyProvider.baseCurrency;
-                          if (baseCurrency == null) {
-                            return Text('Bs ${p.price.toStringAsFixed(2)}');
-                          }
-                          final rates = rateProvider.exchangeRates;
-                          final price1 = settings.additionalCurrency1Id != null 
-                              ? _getPrice(p.price, baseCurrency.id!, settings.additionalCurrency1Id!, rates)
-                              : null;
-                          final price2 = settings.additionalCurrency2Id != null 
-                              ? _getPrice(p.price, baseCurrency.id!, settings.additionalCurrency2Id!, rates)
-                              : null;
-                          
-                          final currency1 = price1 != null 
-                              ? currencyProvider.currencies.where((c) => c.id == settings.additionalCurrency1Id).firstOrNull
-                              : null;
-                          final currency2 = price2 != null 
-                              ? currencyProvider.currencies.where((c) => c.id == settings.additionalCurrency2Id).firstOrNull
-                              : null;
-                          
-                          return Row(
-                            children: [
-                              Text('${baseCurrency.symbol} ${p.price.toStringAsFixed(2)}', 
-                                style: const TextStyle(fontWeight: FontWeight.bold)),
-                              if (currency1 != null && price1 != null) ...[
-                                const SizedBox(width: 8),
-                                Text('${currency1.symbol} ${price1!.toStringAsFixed(2)}'),
-                              ],
-                              if (currency2 != null && price2 != null) ...[
-                                const SizedBox(width: 8),
-                                Text('${currency2.symbol} ${price2!.toStringAsFixed(2)}'),
-                              ],
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.edit, color: colorScheme.primary),
-                        onPressed: () => _showProductDialog(context, product: p),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete, color: colorScheme.error),
-                        onPressed: () => _confirmDelete(context, p.id!, p.name),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _showProductDialog(BuildContext context, {Product? product}) {

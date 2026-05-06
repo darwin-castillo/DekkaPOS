@@ -4,7 +4,7 @@ class Invoice {
   final int? id;
   final String numero;
   final DateTime fecha;
-  final String? clienteId;
+  final int? clienteId;
   final double subtotal;
   final double tax;
   final double discount;
@@ -35,7 +35,7 @@ class Invoice {
     int? id,
     String? numero,
     DateTime? fecha,
-    String? clienteId,
+    int? clienteId,
     double? subtotal,
     double? tax,
     double? discount,

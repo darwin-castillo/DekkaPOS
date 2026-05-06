@@ -14,7 +14,7 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: Colors.white,
-      fontFamily: 'Quicksand',
+      fontFamily: 'Poppins',
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.white,
         elevation: 0,
