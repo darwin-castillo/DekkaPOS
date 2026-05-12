@@ -12,6 +12,9 @@ import '../providers/exchange_rate_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/invoice_provider.dart';
 import 'package:dekkapos/presentation/widgets/dekka_app_bar.dart';
+import 'widgets/product_search_bar.dart';
+import 'widgets/product_list_widget.dart';
+import '../../core/theme/app_theme.dart';
 
 class VentasScreen extends StatelessWidget {
   const VentasScreen({super.key});
@@ -41,57 +44,24 @@ class _ProductPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      color: colorScheme.surfaceContainerHighest,
-      padding: const EdgeInsets.all(12),
+      color: AppColors.panelBg,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(Icons.inventory_2, color: colorScheme.primary),
-              const SizedBox(width: 8),
-              const Text(
-                'Productos',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
           Consumer<ProductProvider>(
-            builder: (context, provider, _) => TextField(
-              decoration: const InputDecoration(
-                hintText: 'Buscar producto...',
-                prefixIcon: Icon(Icons.search),
-                isDense: true,
-                filled: true,
-                fillColor: Colors.white,
-              ),
-              onChanged: provider.search,
-            ),
+            builder: (context, provider, _) =>
+                ProductSearchBar(onChanged: provider.search),
           ),
-          const SizedBox(height: 12),
           Expanded(
             child: Consumer<ProductProvider>(
               builder: (context, provider, _) {
                 final products = provider.filteredProducts.isEmpty
                     ? provider.products
                     : provider.filteredProducts;
-                if (products.isEmpty) {
-                  return const Center(child: Text('No hay productos'));
-                }
-                return Card(
-                  elevation: 2,
-                  child: ListView.separated(
-                    itemCount: products.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final p = products[index];
-                      final isKg = p.unit == SaleUnit.kilogramo;
-                      return _ProductListItem(product: p, isKg: isKg);
-                    },
-                  ),
+                return ProductListWidget(
+                  products: products,
+                  onProductTap: (product) =>
+                      _handleProductTap(context, product),
                 );
               },
             ),
@@ -100,69 +70,13 @@ class _ProductPanel extends StatelessWidget {
       ),
     );
   }
-}
 
-class _ProductListItem extends StatelessWidget {
-  final Product product;
-  final bool isKg;
-
-  const _ProductListItem({required this.product, required this.isKg});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: isKg
-            ? colorScheme.tertiaryContainer
-            : colorScheme.primaryContainer,
-        child: Icon(
-          isKg ? Icons.scale : Icons.shopping_bag,
-          color: isKg
-              ? colorScheme.onTertiaryContainer
-              : colorScheme.onPrimaryContainer,
-        ),
-      ),
-      title: Text(
-        product.name,
-        style: const TextStyle(fontWeight: FontWeight.bold),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: Text('Código: ${product.code}'),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Bs ${product.price.toStringAsFixed(2)}',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: colorScheme.primary,
-            ),
-          ),
-          if (isKg) ...[
-            const SizedBox(width: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: colorScheme.tertiaryContainer,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                'kg',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: colorScheme.onTertiaryContainer,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-      onTap: () => context.read<CartProvider>().addProduct(product),
-      onLongPress: isKg ? () => _showWeightDialog(context, product) : null,
-    );
+  void _handleProductTap(BuildContext context, Product product) {
+    if (product.unit == SaleUnit.kilogramo) {
+      _showWeightDialog(context, product);
+    } else {
+      context.read<CartProvider>().addProduct(product);
+    }
   }
 
   void _showWeightDialog(BuildContext context, Product product) {
@@ -385,59 +299,91 @@ class _CartPanelState extends State<_CartPanel> {
           return rate != null ? price * rate.value : null;
         }
 
-        return DataTable(
-          columnSpacing: 12,
-          horizontalMargin: 12,
-          headingRowColor: WidgetStateProperty.all(Colors.grey.shade200),
-          columns: [
-            const DataColumn(
-              label: Text('Código', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            const DataColumn(
-              label: Text('Producto', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            const DataColumn(
-              label: Text('Cant.', style: TextStyle(fontWeight: FontWeight.bold)),
-              numeric: true,
-            ),
-            DataColumn(
-              label: Text('P.Unit.', style: TextStyle(fontWeight: FontWeight.bold)),
-              numeric: true,
-            ),
-            if (additional1 != null)
-              DataColumn(
-                label: Text('Total ${additional1.code}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                numeric: true,
-              ),
-            if (additional2 != null)
-              DataColumn(
-                label: Text('Total ${additional2.code}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                numeric: true,
-              ),
-            DataColumn(
-              label: Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
-              numeric: true,
-            ),
-            const DataColumn(label: Text('')),
-          ],
-          rows: List.generate(cart.items.length, (index) {
+        return ListView.builder(
+          itemCount: cart.items.length,
+          itemBuilder: (context, index) {
             final item = cart.items[index];
             final isKg = item.unit == SaleUnit.kilogramo;
-            final total1 = additional1 != null ? getConvertedPrice(item.total, additional1.id!) : null;
-            final total2 = additional2 != null ? getConvertedPrice(item.total, additional2.id!) : null;
-            return DataRow(
-              cells: [
-                DataCell(Text(item.code, style: const TextStyle(fontSize: 11))),
-                DataCell(Text(item.name, style: const TextStyle(fontSize: 11), overflow: TextOverflow.ellipsis, maxLines: 1)),
-                DataCell(Text(isKg ? item.cantidad.toStringAsFixed(3) : item.cantidad.toStringAsFixed(0))),
-                DataCell(Text('${baseCurrency?.symbol ?? 'Bs'} ${item.precio.toStringAsFixed(2)}')),
-                if (additional1 != null) DataCell(Text(total1 != null ? '${additional1.symbol} ${total1.toStringAsFixed(2)}' : '-')),
-                if (additional2 != null) DataCell(Text(total2 != null ? '${additional2.symbol} ${total2.toStringAsFixed(2)}' : '-')),
-                DataCell(Text('${baseCurrency?.symbol ?? 'Bs'} ${item.total.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold))),
-                DataCell(IconButton(icon: const Icon(Icons.delete, size: 18, color: Colors.red), onPressed: () => cart.removeItem(index))),
-              ],
+            final total1 = additional1 != null
+                ? getConvertedPrice(item.total, additional1.id!)
+                : null;
+            final total2 = additional2 != null
+                ? getConvertedPrice(item.total, additional2.id!)
+                : null;
+
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          item.code,
+                          style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      isKg
+                          ? item.cantidad.toStringAsFixed(3) + ' kg'
+                          : item.cantidad.toStringAsFixed(0) + ' und',
+                      style: const TextStyle(fontSize: 11),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      '${baseCurrency?.symbol ?? 'Bs'} ${item.precio.toStringAsFixed(2)}',
+                      style: const TextStyle(fontSize: 11),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${baseCurrency?.symbol ?? 'Bs'} ${item.total.toStringAsFixed(2)}',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                        ),
+                        if (total1 != null)
+                          Text(
+                            '${additional1!.symbol} ${total1.toStringAsFixed(2)}',
+                            style: const TextStyle(fontSize: 9, color: Colors.grey),
+                          ),
+                        if (total2 != null)
+                          Text(
+                            '${additional2!.symbol} ${total2.toStringAsFixed(2)}',
+                            style: const TextStyle(fontSize: 9, color: Colors.grey),
+                          ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                    onPressed: () => cart.removeItem(index),
+                  ),
+                ],
+              ),
             );
-          }),
+          },
         );
       },
     );

@@ -1,4 +1,5 @@
 import 'package:dekkapos/presentation/widgets/nav_button.dart';
+import 'package:dekkapos/presentation/widgets/side_menu_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -31,7 +32,15 @@ class MainScreen extends StatelessWidget {
     return Scaffold(
       body: Row(
         children: [
-          const _SideMenu(),
+          //    const _SideMenu(),
+          Consumer<NavigationProvider>(
+            builder: (context, nav, _) => SideMenuBar(
+              selectedIndex: nav.selectedIndex,
+              onItemSelected: (index) {
+                nav.setIndex(index);
+              },
+            ),
+          ),
           Container(width: 1, color: colorScheme.outlineVariant),
           Expanded(
             child: Consumer<NavigationProvider>(

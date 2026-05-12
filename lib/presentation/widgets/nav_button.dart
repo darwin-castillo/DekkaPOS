@@ -26,7 +26,7 @@ class _NavButtonState extends State<NavButton> {
   @override
   Widget build(BuildContext context) {
     final color = widget.isSelected
-        ? AppTheme.primaryColor
+        ? Colors.white
         : _isHovered
         ? Colors.white
         : Colors.white70;
@@ -34,7 +34,9 @@ class _NavButtonState extends State<NavButton> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 12),
       child: Material(
-        color: widget.isSelected ? Colors.white : Colors.transparent,
+        color: widget.isSelected
+            ? AppTheme.primaryColor.withAlpha(120)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
         child: InkWell(
           onTap: widget.onTap,
