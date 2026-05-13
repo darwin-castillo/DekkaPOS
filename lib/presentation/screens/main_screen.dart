@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/navigation_provider.dart';
-import 'ventas_screen.dart';
+
 import 'productos_screen.dart';
 import 'clientes_screen.dart';
 import 'proveedores_screen.dart';
@@ -12,6 +12,7 @@ import 'reportes_screen.dart';
 import 'facturas_screen.dart';
 import 'configuracion_screen.dart';
 import '../../core/theme.dart';
+import 'ventas/ventas_screen.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/product.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../domain/entities/product.dart';
 
 // ─────────────────────────────────────────
 // ProductListWidget
