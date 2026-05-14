@@ -10,11 +10,13 @@ import '../../../../domain/entities/product.dart';
 class ProductListWidget extends StatelessWidget {
   final List<Product> products;
   final ValueChanged<Product> onProductTap;
+  final int selectedIndex;
 
   const ProductListWidget({
     super.key,
     required this.products,
     required this.onProductTap,
+    this.selectedIndex = -1,
   });
 
   @override
@@ -34,6 +36,7 @@ class ProductListWidget extends StatelessWidget {
       separatorBuilder: (_, __) => const SizedBox(height: 2),
       itemBuilder: (context, i) => ProductTile(
         product: products[i],
+        isSelected: i == selectedIndex,
         onTap: () => onProductTap(products[i]),
       ),
     );
@@ -48,8 +51,14 @@ class ProductListWidget extends StatelessWidget {
 class ProductTile extends StatefulWidget {
   final Product product;
   final VoidCallback onTap;
+  final bool isSelected;
 
-  const ProductTile({super.key, required this.product, required this.onTap});
+  const ProductTile({
+    super.key,
+    required this.product,
+    required this.onTap,
+    this.isSelected = false,
+  });
 
   @override
   State<ProductTile> createState() => _ProductTileState();
@@ -68,23 +77,35 @@ class _ProductTileState extends State<ProductTile> {
 
   @override
   Widget build(BuildContext context) {
+    final isHighlighted = widget.isSelected || _flashing;
     return GestureDetector(
       onTap: _handleTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
         decoration: BoxDecoration(
-          color: _flashing ? AppColors.accentLight : Colors.transparent,
+          color: isHighlighted ? AppColors.accentLight : Colors.transparent,
           border: Border.all(
-            color: _flashing
+            color: isHighlighted
                 ? AppColors.accent.withOpacity(0.35)
                 : Colors.transparent,
-            width: 0.5,
+            width: isHighlighted ? 2 : 0.5,
           ),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
           children: [
+            // Selection indicator
+            if (widget.isSelected)
+              Container(
+                width: 4,
+                height: 30,
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
             // Emoji thumbnail
             // _ProductThumb(emoji: widget.product.emoji),
             const SizedBox(width: 10),

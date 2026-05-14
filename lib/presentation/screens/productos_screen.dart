@@ -1,5 +1,7 @@
+import 'dart:io' if (dart.library.html) 'dart:html';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../domain/entities/product.dart';
 import '../providers/product_provider.dart';
 import '../providers/currency_provider.dart';
@@ -48,7 +50,7 @@ class _ProductosScreenState extends State<ProductosScreen> {
         userInitial: 'A',
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showProductDialog(context),
+        onPressed: () => _showProductMenu(context),
         icon: const Icon(Icons.add),
         label: const Text('Nuevo'),
         backgroundColor: colorScheme.primary,
@@ -229,6 +231,235 @@ class _ProductosScreenState extends State<ProductosScreen> {
     showDialog(
       context: context,
       builder: (context) => ProductFormDialog(product: product),
+    );
+  }
+
+  void _showProductMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.add),
+            title: const Text('Nuevo producto'),
+            onTap: () {
+              Navigator.pop(ctx);
+              _showProductDialog(context);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.upload_file),
+            title: const Text('Importar desde CSV'),
+            subtitle: const Text('Carga masiva de productos'),
+            onTap: () {
+              Navigator.pop(ctx);
+              _importProducts(context);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.download),
+            title: const Text('Descargar plantilla CSV'),
+            subtitle: const Text('Ejemplo del formato requerido'),
+            onTap: () {
+              Navigator.pop(ctx);
+              _downloadTemplate(context);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _importProducts(BuildContext context) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv', 'txt'],
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      String content;
+      if (result.files.single.bytes != null) {
+        content = String.fromCharCodes(result.files.single.bytes!);
+      } else if (result.files.single.path != null) {
+        final file = await _readFile(result.files.single.path!);
+        content = file;
+      } else {
+        return;
+      }
+
+      final lines = content.split('\n').where((l) => l.trim().isNotEmpty).toList();
+
+      if (lines.isEmpty) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('El archivo está vacío')),
+          );
+        }
+        return;
+      }
+
+      final hasHeader = lines.first.toLowerCase().contains('código') ||
+          lines.first.toLowerCase().contains('nombre');
+      final startIndex = hasHeader ? 1 : 0;
+
+      final products = <Product>[];
+      final errors = <String>[];
+
+      for (int i = startIndex; i < lines.length; i++) {
+        final line = lines[i];
+        final fields = line.split(',').map((f) => f.trim()).toList();
+
+        if (fields.length < 3) {
+          errors.add('Línea ${i + 1}: Formato inválido');
+          continue;
+        }
+
+        try {
+          final code = fields[0];
+          final name = fields[1];
+          final price = double.tryParse(fields[2]) ?? 0;
+
+          if (code.isEmpty || name.isEmpty) {
+            errors.add('Línea ${i + 1}: Código o nombre vacío');
+            continue;
+          }
+
+          final unit = fields.length > 3 && fields[3].toLowerCase().contains('kg')
+              ? SaleUnit.kilogramo
+              : SaleUnit.unitario;
+
+          final stock = fields.length > 4 ? double.tryParse(fields[4]) ?? 0 : 0.0;
+          final cost = fields.length > 5 ? double.tryParse(fields[5]) ?? 0 : 0.0;
+
+          products.add(Product(
+            code: code,
+            name: name,
+            price: price,
+            stock: stock,
+            cost: cost,
+            unit: unit,
+          ));
+        } catch (e) {
+          errors.add('Línea ${i + 1}: Error al procesar');
+        }
+      }
+
+      if (products.isEmpty && errors.isNotEmpty) {
+        if (context.mounted) {
+          _showImportResult(context, 0, errors);
+        }
+        return;
+      }
+
+      final provider = context.read<ProductProvider>();
+      int added = 0;
+      for (final p in products) {
+        await provider.create(p);
+        added++;
+      }
+
+      if (context.mounted) {
+        _showImportResult(context, added, errors);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al importar: $e')),
+        );
+      }
+    }
+  }
+
+  Future<String> _readFile(String path) async {
+    try {
+      final file = await Future(() => File(path).readAsStringSync());
+      return file;
+    } catch (e) {
+      return '';
+    }
+  }
+
+  void _showImportResult(BuildContext context, int added, List<String> errors) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Resultado de importación'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '$added producto(s) importado(s)',
+              style: TextStyle(
+                color: added > 0 ? Colors.green : Colors.orange,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (errors.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              const Text('Errores:', style: TextStyle(fontWeight: FontWeight.bold)),
+              ...errors.take(5).map((e) => Text(e, style: const TextStyle(fontSize: 12))),
+              if (errors.length > 5) Text('... y ${errors.length - 5} más'),
+            ],
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Aceptar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _downloadTemplate(BuildContext context) {
+    final template = '''código,nombre,precio,unidad,stock,costo
+PROD001,Manzana Roja,5.50,kg,100,3.00
+PROD002,Pan Integral,2.00,und,50,1.20
+PROD003,Queso Blanco,12.00,kg,25,8.50''';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Plantilla CSV'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Copia y guarda este contenido como un archivo .csv:',
+              style: TextStyle(fontSize: 12),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: SelectableText(
+                template,
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Formato: código,nombre,precio,unidad(kg/und),stock,costo',
+              style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
     );
   }
 

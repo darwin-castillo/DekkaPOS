@@ -10,8 +10,14 @@ import '../../../../core/theme/app_theme.dart';
 class ProductSearchBar extends StatelessWidget {
   final ValueChanged<String> onChanged;
   final TextEditingController? controller;
+  final FocusNode? focusNode;
 
-  const ProductSearchBar({super.key, required this.onChanged, this.controller});
+  const ProductSearchBar({
+    super.key,
+    required this.onChanged,
+    this.controller,
+    this.focusNode,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +42,7 @@ class ProductSearchBar extends StatelessWidget {
               child: TextField(
                 controller: controller,
                 onChanged: onChanged,
+                focusNode: focusNode,
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textPrimary,

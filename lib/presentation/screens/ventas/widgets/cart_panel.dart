@@ -499,7 +499,7 @@ class _TableHeader extends StatelessWidget {
 
           _TH('Unidad', flex: 3, align: CrossAxisAlignment.center),
           _TH('P. Unit.', flex: 5, align: CrossAxisAlignment.end),
-          _TH('Cantidad', flex: 4, align: CrossAxisAlignment.center),
+          _TH('Cantidad', flex: 4, align: CrossAxisAlignment.end),
           _TH('Total', flex: 4, align: CrossAxisAlignment.end),
           _TH('', flex: 2, align: CrossAxisAlignment.center),
         ],
